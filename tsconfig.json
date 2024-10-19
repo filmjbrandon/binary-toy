@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "jsx": "react-jsx",  // or "react" for React versions below 17
+      "module": "esnext",
+      "target": "es5",
+      "lib": ["dom", "esnext"],
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "resolveJsonModule": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
+  }
+  

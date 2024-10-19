@@ -1,0 +1,14 @@
+.bit {
+    appearance: none;
+    background-color: black;
+    border: 1px solid #999;
+    float: left;
+    font-weight: bold;
+    padding-left: 20px;
+    padding-right: 20px;
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 72px;
+    color: white;
+}

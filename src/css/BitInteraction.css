@@ -1,0 +1,27 @@
+div.interaction {
+    display : flex;
+    justify-content: center;
+    column-gap: 4px;
+    height: 400px;
+}
+
+div.bits {
+    flex-direction: row-reverse;
+}
+
+.control {
+    display:flex;
+    justify-content: center;
+    flex-direction: row;
+    max-height: 200px;
+    margin: auto;
+}
+
+.control input {
+    background-color: rgb(236, 236, 233);
+}
+
+.control button {
+    appearance: button;
+    width: 100px;
+}
