@@ -7,13 +7,16 @@ export default function BitInteraction({ numberOfBits = 2 }) {
     const [bitCount, setBitCount] = useState(numberOfBits);
     const [intValue, setIntValue] = useState(0);
     const [bits, setBits] = useState(Array(numberOfBits).fill(0));
+    const [resetState, setResetState] = useState(false);
 
     const addBit = () => {
+        setResetState(false);
         setBitCount(bitCount + 1);
         setBits([...bits, 0]);
     };
 
     const handleBitChange = (index:number, value:number) => {
+        setResetState(false);
         console.log("Setting bit-%d to %d:", index, value);
         // const updatedBits = bits.map((b:number,i:number)=>{
         //     console.log("b,i",b,i);
@@ -41,6 +44,13 @@ export default function BitInteraction({ numberOfBits = 2 }) {
         setBits(intValue.toString(2).split(''));
     }
 
+    const resetBits = () => {
+        setResetState(true);
+        setBits(Array(numberOfBits).fill(0));
+        setResetState(true);
+        setIntValue(0);
+    }
+
     return (
         <>
             <div data-testid="bit-interaction" className="interaction bits">
@@ -48,14 +58,17 @@ export default function BitInteraction({ numberOfBits = 2 }) {
                     <Bit
                         key={i}
                         index={i}
+                        setValue={v}
                         onChange={handleBitChange}
+                        isReset={resetState}
                     />
                 ))}
             </div>
 
             <div className="control">
                 <input type="text" onChange={handleIntChange} id="number-value" value={intValue} />
-                <button onClick={addBit}>Add Bit</button>
+                <button data-testid="add-bit" onClick={addBit}>Add Bit</button>
+                <button data-testid="reset" onClick={resetBits}>Reset</button>
             </div>
         </>
     );

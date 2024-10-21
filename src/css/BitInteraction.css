@@ -3,6 +3,7 @@ div.interaction {
     justify-content: center;
     column-gap: 4px;
     height: 400px;
+    width: 100vw; /* Adjust container width as needed */
 }
 
 div.bits {
@@ -19,6 +20,7 @@ div.bits {
 
 .control input {
     background-color: rgb(236, 236, 233);
+    font-size: 48px;
 }
 
 .control button {

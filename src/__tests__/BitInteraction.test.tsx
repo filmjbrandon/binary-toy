@@ -1,7 +1,7 @@
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import BitInteraction from '../BitInteraction';
-import userEvent from '@testing-library/user-event';
+// import userEvent from '@testing-library/user-event';
 
 test('interaction defaults to 2 bits', () => {
     render(<BitInteraction />);
@@ -26,6 +26,42 @@ test('interaction receives updates of bit values', () => {
     fireEvent.click(bits[0]);
     expect(result).toHaveValue('2');
 });
+
+test('can add bits', () => {
+    render(<BitInteraction numberOfBits={2} />);
+    let bits = screen.getAllByTestId('bit');
+    expect(bits).toHaveLength(2);
+    const button = screen.getByTestId('add-bit');
+    expect(button).toHaveTextContent('Add Bit');
+    fireEvent.click(button);
+    bits = screen.getAllByTestId('bit');
+    expect(bits).toHaveLength(3);
+});
+
+test('can reset interaction', () => {
+    render(<BitInteraction numberOfBits={2} />);
+    let bits = screen.getAllByTestId('bit');
+    expect(bits).toHaveLength(2);
+    let button = screen.getByTestId('add-bit');
+    expect(button).toHaveTextContent('Add Bit');
+    fireEvent.click(button);
+    fireEvent.click(button);
+    bits = screen.getAllByTestId('bit');
+    expect(bits).toHaveLength(4);
+    fireEvent.click(bits[0])
+    expect(bits[0]).toHaveTextContent('1');
+    fireEvent.click(bits[1])
+    expect(bits[1]).toHaveTextContent('1');
+    button = screen.getByTestId('reset');
+    expect(button).toHaveTextContent('Reset');
+    fireEvent.click(button);
+    expect(bits[0]).toHaveTextContent('0');
+    expect(bits[1]).toHaveTextContent('0');
+    bits = screen.getAllByTestId('bit');
+    expect(bits).toHaveLength(2);
+});
+
+
 
 // test('can set bit values from input', () => {
 //     render(<BitInteraction />);

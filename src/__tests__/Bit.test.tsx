@@ -26,3 +26,15 @@ test('Bit ID is set on button from index', () => {
   const button = screen.getByRole('button');
   expect(button).toHaveAttribute('id', 'bit-1');
 });
+
+test('can reset bit', () => {
+  render(<Bit />)
+  const button = screen.getByRole('button');
+  fireEvent.click(button);
+  expect(button).toHaveTextContent('1');
+  render(<Bit setValue={1} />)
+  expect(button).toHaveTextContent('1');
+  fireEvent.click(button);
+  expect(button).toHaveTextContent('0');
+
+});
