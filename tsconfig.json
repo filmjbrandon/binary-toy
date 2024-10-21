@@ -3,7 +3,7 @@
       "jsx": "react-jsx",  // or "react" for React versions below 17
       "module": "esnext",
       "target": "es5",
-      "lib": ["dom", "esnext"],
+      "lib": ["dom", "ES2023", "ESNext"],
       "strict": true,
       "esModuleInterop": true,
       "skipLibCheck": true,

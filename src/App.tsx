@@ -3,7 +3,7 @@ import BitInteraction from './BitInteraction';
 function App() {
   return (
     <div className="App">
-      <BitInteraction numberOfBits={4} />
+      <BitInteraction />
     </div>
   );
 }

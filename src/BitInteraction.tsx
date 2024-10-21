@@ -3,9 +3,10 @@ import { useState } from "react";
 import Bit from "./Bit";
 import "./css/BitInteraction.css";
 
-export default function BitInteraction({ numberOfBits = 2 }) {
+export default function BitInteraction({ numberOfBits = 8 }) {
     const [bitCount, setBitCount] = useState(numberOfBits);
     const [intValue, setIntValue] = useState(0);
+    const [hexValue, setHexValue] = useState('0x00');
     const [bits, setBits] = useState(Array(numberOfBits).fill(0));
     const [resetState, setResetState] = useState(false);
 
@@ -14,6 +15,22 @@ export default function BitInteraction({ numberOfBits = 2 }) {
         setBitCount(bitCount + 1);
         setBits([...bits, 0]);
     };
+
+    const removeBit = () => {
+        if (bitCount > 1) {
+            const newBitCount = bitCount - 1;
+            setBitCount(newBitCount);
+            const updatedBits = bits.slice(0,newBitCount);
+            setBits(updatedBits);
+            displayValues(updatedBits);
+        }
+    };
+    
+    const displayValues = (arrayOfBits:Array<number>) => {
+        const iVal = parseInt(arrayOfBits.toReversed().join(""),2);
+        setIntValue(iVal);
+        setHexValue('0x'+iVal.toString(16).padStart(2,'0').toUpperCase());
+    }
 
     const handleBitChange = (index:number, value:number) => {
         setResetState(false);
@@ -35,7 +52,7 @@ export default function BitInteraction({ numberOfBits = 2 }) {
         });
         console.log("bits-reversed",updatedBits);
         setBits(updatedBits);
-        setIntValue(Number.parseInt(updatedBits.toReversed().join(""),2));
+        displayValues(updatedBits);
         console.log("updated",updatedBits);
     };
 
@@ -46,9 +63,9 @@ export default function BitInteraction({ numberOfBits = 2 }) {
 
     const resetBits = () => {
         setResetState(true);
-        setBits(Array(numberOfBits).fill(0));
-        setResetState(true);
+        setBits(Array(bitCount).fill(0));
         setIntValue(0);
+        setHexValue('0x00');
     }
 
     return (
@@ -66,9 +83,72 @@ export default function BitInteraction({ numberOfBits = 2 }) {
             </div>
 
             <div className="control">
-                <input type="text" onChange={handleIntChange} id="number-value" value={intValue} />
-                <button data-testid="add-bit" onClick={addBit}>Add Bit</button>
-                <button data-testid="reset" onClick={resetBits}>Reset</button>
+
+                <div className="display">
+
+                    <div>
+                    <label htmlFor="hex-value">
+                        HexVal
+                    </label>
+                    <input type="text"  
+                        disabled={true}
+                        data-testid="hex-value"
+                        id="hex-value" 
+                        value={hexValue} 
+                    />
+                    </div>
+
+                    <div>
+                    <label htmlFor="int-value">
+                        IntVal
+                    </label>
+                    <input type="text" 
+                        disabled={true}
+                        id="int-value" 
+                        data-testid="int-value"
+                        value={intValue} 
+                    />
+                    <label htmlFor="bit-count">
+                        # of Bits
+                    </label>
+                    <input type="text" 
+                        disabled={true}
+                        id="bit-count" 
+                        data-testid="bit-count"
+                        value={bitCount} 
+                    />
+
+                    <label htmlFor="char">
+                       Character
+                    </label>
+                    <input type="text" 
+                        disabled={true}
+                        id="char" 
+                        data-testid="char"
+                        value={String.fromCharCode(intValue)} 
+                    />
+
+                    </div>
+                </div>
+
+                <div className="buttons">
+
+                    <button 
+                        data-testid="add-bit" 
+                        onClick={addBit}>
+                        Add Bit
+                    </button>
+                    <button
+                        disabled={bitCount < 2} 
+                        data-testid="remove-bit" 
+                        onClick={removeBit}>
+                        Remove Bit
+                    </button>
+                    <button data-testid="reset" 
+                        onClick={resetBits}>
+                        Reset Bits
+                    </button>
+                </div>
             </div>
         </>
     );

@@ -6,6 +6,7 @@ div.interaction {
     width: 100vw; /* Adjust container width as needed */
 }
 
+
 div.bits {
     flex-direction: row-reverse;
 }
@@ -14,8 +15,9 @@ div.bits {
     display:flex;
     justify-content: center;
     flex-direction: row;
-    max-height: 200px;
+    max-height: 150px;
     margin: auto;
+    flex-wrap:wrap;
 }
 
 .control input {
@@ -23,7 +25,26 @@ div.bits {
     font-size: 48px;
 }
 
+.buttons {
+    margin-left: 50px;
+}
+
 .control button {
     appearance: button;
+    height: 60px;
+    margin-top: 20px;
+    margin-left: 3px;
+    margin-right: 3px;
     width: 100px;
+}
+
+.control label {
+    color: white;
+}
+
+.control label, input {
+    display:flex;
+    flex-direction:column;
+    flex-wrap:wrap;
+    width:180px;
 }
