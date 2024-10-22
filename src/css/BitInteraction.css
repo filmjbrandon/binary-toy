@@ -1,50 +1,99 @@
 div.interaction {
     display : flex;
+    flex-flow: row-reverse;
     justify-content: center;
-    column-gap: 4px;
-    height: 400px;
-    width: 100vw; /* Adjust container width as needed */
+    flex-wrap: wrap-reverse;
+    row-gap: 1em;
+    column-gap: 1em;
+    padding-top: 1em;
 }
 
-
 div.bits {
+    display: flex;
+    flex-direction: column; 
+    padding: 0px;
+    margin: 0px;   
+    max-width: 55vw;
+    min-width:300px;
+
+}
+
+div.bits div.byte {
+    /* flex-direction: column; */
+    display : flex;
+    margin-right: auto;
+    justify-content: right;
+    /* column-gap: 4px; */
+    /* width: 100vw; */
+    /* margin: 10px; */
     flex-direction: row-reverse;
 }
 
 .control {
+    padding: 10px;
+    margin: 0px;   
+    min-width: 400px;
+    width: 40vw;
     display:flex;
-    justify-content: center;
     flex-direction: row;
-    max-height: 150px;
-    margin: auto;
-    flex-wrap:wrap;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    align-content: flex-start;
+    gap: 1em;
+
+}
+
+.display-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.display {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 1em;
+}
+
+.bit-container {
+    display:flex;
+    flex-direction:column;
 }
 
 .control input {
     background-color: rgb(236, 236, 233);
-    font-size: 48px;
+    font-size: 36px;
+    width:180px;
 }
 
-.buttons {
-    margin-left: 50px;
+div.buttons {
+    /* margin-left: 3px; */
+    /* display:flex;
+    flex-direction: row; */
+
 }
 
 .control button {
     appearance: button;
-    height: 60px;
+    height: 50px;
     margin-top: 20px;
     margin-left: 3px;
     margin-right: 3px;
     width: 100px;
 }
 
-.control label {
+label {
     color: white;
+    width: 100%;
+    margin-bottom: 2px;
+    /* border:1px solid white; */
 }
 
-.control label, input {
+.inc-dec {
+    float:right;
     display:flex;
-    flex-direction:column;
-    flex-wrap:wrap;
-    width:180px;
+    flex-direction: column;
+    color:aliceblue;
 }

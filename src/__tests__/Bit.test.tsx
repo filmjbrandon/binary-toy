@@ -38,3 +38,17 @@ test('can reset bit', () => {
   expect(button).toHaveTextContent('0');
 
 });
+
+test('displays bit number', () => {
+  render(<Bit />)
+  const label = screen.getByTestId('bit-label');
+  expect(label).toHaveTextContent('1'); 
+})
+
+test('bit can be reset manually', () => {
+  render(<Bit setValue={1} />)
+  const button = screen.getByRole('button');
+  expect(button).toHaveTextContent('1');
+  fireEvent.click(button);
+  expect(button).toHaveTextContent('0');
+})
