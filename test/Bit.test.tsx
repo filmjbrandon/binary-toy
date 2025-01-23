@@ -1,6 +1,6 @@
-import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
-import Bit from '../Bit';
+import Bit from '../src/components/Bit';
+import { expect, test } from 'vitest'
 
 test('renders a bit', () => {
   render(<Bit />);

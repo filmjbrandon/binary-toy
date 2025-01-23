@@ -1,5 +1,5 @@
-import './css/App.css';
-import BitInteraction from './BitInteraction';
+import './App.css';
+import BitInteraction from './components/BitInteraction';
 function App() {
   return (
     <div className="App">

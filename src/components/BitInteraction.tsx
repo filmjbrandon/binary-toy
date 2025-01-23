@@ -2,7 +2,7 @@ import { useState } from "react";
 import _, { isEmpty } from 'lodash';
 
 import Bit from "./Bit";
-import "./css/BitInteraction.css";
+import "../css/BitInteraction.css";
 
 let counter = 0;
 
@@ -133,7 +133,7 @@ export default function BitInteraction({ numberOfBits = 8 }) {
     }
 
     // Print and increase the value
-      console.log('Screen is refreshed ', ++counter, ' times')
+    console.log('Screen is refreshed ', ++counter, ' times')
 
 
 
