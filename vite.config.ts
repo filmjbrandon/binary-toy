@@ -13,6 +13,6 @@ export default defineConfig({
     coverage: {
       reporter: ['lcov', 'text'],
     },
-    outputFile: 'coverage/sonar-report.xml',
+    outputFile: 'test/coverage/sonar-report.xml',
   },
 })

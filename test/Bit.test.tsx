@@ -1,54 +1,48 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import Bit from '../src/components/Bit';
-import { expect, test } from 'vitest'
+import { expect, test, afterEach } from 'vitest'
+
+afterEach(()=>{
+  cleanup()
+})
 
 test('renders a bit', () => {
   render(<Bit />);
-  const button = screen.getByRole('button');
-  expect(button).toHaveTextContent('0');
-  expect(button).toHaveClass('bit');
+  const bit = screen.getByTestId('bit-0');
+  expect(bit).toHaveTextContent('0');
+  expect(bit).toHaveClass('bit');
 });
 
-test('bit is toggleable', () => {
-  render(<Bit />);
-  const button = screen.getByRole('button');
-  expect(button).toHaveTextContent('0');
-  fireEvent.click(button);
-  expect(button).toHaveTextContent('1');
-  fireEvent.click(button);
-  expect(button).toHaveTextContent('0');
-  fireEvent.click(button);
-  expect(button).toHaveTextContent('1');
-});
-
-test('Bit ID is set on button from index', () => {
+test('Bit ID can be set using index', () => {
   render(<Bit index={1} />);
-  const button = screen.getByRole('button');
-  expect(button).toHaveAttribute('id', 'bit-1');
+  const bit = screen.getByTestId('bit-1');
+  expect(bit).toHaveAttribute('id', 'bit-1');
 });
 
-test('can reset bit', () => {
-  render(<Bit />)
-  const button = screen.getByRole('button');
-  fireEvent.click(button);
-  expect(button).toHaveTextContent('1');
-  render(<Bit setValue={1} />)
-  expect(button).toHaveTextContent('1');
-  fireEvent.click(button);
-  expect(button).toHaveTextContent('0');
-
+test('can set value for a bit', () => {
+  render(<Bit defaultValue={1} />)
+  const bit = screen.getByTestId('bit-0');
+  expect(bit).toHaveTextContent('1');
+  cleanup()
+  
+  render(<Bit defaultValue={0} />)
+  const bit2 = screen.getByTestId('bit-0');
+  expect(bit2).toHaveTextContent('0');
+  cleanup()
 });
 
 test('displays bit number', () => {
-  render(<Bit />)
+  render(<Bit index={7} />)
   const label = screen.getByTestId('bit-label');
-  expect(label).toHaveTextContent('1'); 
+  expect(label).toHaveTextContent('7'); 
 })
 
-test('bit can be reset manually', () => {
-  render(<Bit setValue={1} />)
-  const button = screen.getByRole('button');
-  expect(button).toHaveTextContent('1');
-  fireEvent.click(button);
-  expect(button).toHaveTextContent('0');
+test('by default bit can be toggled', () => {
+  render(<Bit />)
+  const bit = screen.getByTestId('bit-0');
+  expect(bit).toHaveTextContent('0'); 
+  fireEvent.click(bit)
+  expect(bit).toHaveTextContent('1'); 
+  fireEvent.click(bit)
+  expect(bit).toHaveTextContent('0');   
 })

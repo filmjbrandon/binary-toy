@@ -68,15 +68,9 @@ div.bits div.byte {
     width:180px;
 }
 
-div.buttons {
-    /* margin-left: 3px; */
-    /* display:flex;
-    flex-direction: row; */
-
-}
-
 .control button {
     appearance: button;
+    -webkit-appearance: button;
     height: 50px;
     margin-top: 20px;
     margin-left: 3px;

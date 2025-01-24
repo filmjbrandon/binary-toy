@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^13.4.0",
+    "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
     "@vitejs/plugin-react": "^4.3.4",
     "immer": "^10.1.1",
@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.17.12",
+    "@vitest/coverage-v8": "^3.0.4",
     "@vitest/ui": "3.0.4",
     "jsdom": "^26.0.0",
     "vitest": "^3.0.4"
