@@ -23,9 +23,8 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     
     const calculateChunkedBitArray = (value: number, useBitCount: number = bitCount): string[][] => {
         const binaryString = value.toString(2);
-        const bitsRemaining = useBitCount
         const paddedBinaryString = binaryString.padStart(
-            Math.ceil(binaryString.length / bitsRemaining) * bitsRemaining,
+            Math.ceil(binaryString.length / useBitCount) * useBitCount,
             "0"
         );
         return chunkBitArray(paddedBinaryString.split("").toReversed());
@@ -38,11 +37,15 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     // Update chunked bit array when intValue changes
     useEffect(() => {
         setChunkedBitArray((prevChunkedBitArray) => {
-            const newChunkedBitArray = calculateChunkedBitArray(intValue, bitCount)
+            const newChunkedBitArray = calculateChunkedBitArray(intValue)
             console.log(`new: ${newChunkedBitArray}, prev:${prevChunkedBitArray}`)
             if (_.isEqual(prevChunkedBitArray,newChunkedBitArray)) {
                 return prevChunkedBitArray
             } else {
+                setBitCount((prevBitCount) => {
+                    const newBitCount = newChunkedBitArray.flat().length
+                    return newBitCount === prevBitCount ? prevBitCount : newBitCount
+                })
                 return newChunkedBitArray
             }
         })
@@ -51,8 +54,13 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     }, [intValue, bitCount])
 
 
-    // Update intValue when chunkedBitArray changes
+    // Update intValue and bitCount when chunkedBitArray changes
     useEffect(() => {
+        setBitCount((prevBitCount) => {
+            const newBitCount = chunkedBitArray.flat().length
+            return newBitCount === prevBitCount ? prevBitCount : newBitCount
+        })
+
         setIntValue((prevIntValue) => {
             console.log(`chunkedBitArray = ${chunkedBitArray}, prevIntValue = ${prevIntValue}, ${bitCount}`)
             const updatedBits = chunkedBitArray.flat()
@@ -66,7 +74,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
             }
             return prevIntValue; // No changes, keep the same
         });
-    }, [chunkedBitArray, bitCount]);
+    }, [chunkedBitArray]);
 
     console.log(`bits as binary string = ${chunkedBitArray.flat().toReversed().join("")}`)
 
@@ -79,9 +87,12 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     }
 
     const removeBit = () => {
-        if (bitCount > 1) {
-            setBitCount(bitCount - 1)
-        }
+        if (bitCount <= 1) 
+            return
+        // removing a bit requires removing last item from exist array of bits
+        const flattenedBitArray = chunkedBitArray.flat()
+        flattenedBitArray.pop() // removes last bit
+        setChunkedBitArray(chunkBitArray(flattenedBitArray))
     }
 
     const addByte = () => {
@@ -90,8 +101,13 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     }
 
     const removeByte = () => {
-        const bitsRemaining = ( bitCount % 8 ) || 8;
-        setBitCount((prevBitCount) => prevBitCount - bitsRemaining) ;
+        if (bitCount <= 8)
+            return
+        const bitsToRemove = ( bitCount % 8 ) || 8;
+        const flattenedBitArray = chunkedBitArray.flat()
+        for (let i=0; i<bitsToRemove; i++)
+            flattenedBitArray.pop() // removes bitsToRemove bits
+        setChunkedBitArray(chunkBitArray(flattenedBitArray))
     }
 
     const handleBitChange = (index: number) => {

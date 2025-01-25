@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, cleanup } from '@testing-library/react';
 import BitInteraction from '../src/components/BitInteraction';
-import _ from 'lodash';
+import _, { remove } from 'lodash';
 import userEvent from '@testing-library/user-event';
 import { expect, test, afterEach } from 'vitest'
 
@@ -162,7 +162,7 @@ test('reset interaction clears display values', () => {
     expect(hexValue).toHaveValue('0x00');
 });
 
-test('can delete a bit from the interaction', () => {
+test('can remove bits', () => {
     render(<BitInteraction numberOfBits={3} />);
     let bits = screen.getAllByTestId(/^bit-[0-9]+/i);
     expect(bits).toHaveLength(3);
@@ -173,7 +173,16 @@ test('can delete a bit from the interaction', () => {
     expect(bits).toHaveLength(2);
 })
 
-test('can delete a bit set to 1 recalculates', () => {
+test('removing bits changes bitCount', () => {
+    render(<BitInteraction numberOfBits={3}/>);
+    const bitCount = screen.getByTestId('bit-count');
+    const removeBit = screen.getByTestId('remove-bit');
+    expect(bitCount).toHaveValue('3');
+    fireEvent.click(removeBit);
+    expect(bitCount).toHaveValue('2');
+})
+
+test('deleting a bit recalculates accurately', () => {
     render(<BitInteraction startingIntValue={255}/>)
     const removeBit = screen.getByTestId('remove-bit')
     const intValue = screen.getByTestId('int-value')
@@ -201,6 +210,25 @@ test('can delete a bit set to 1 recalculates', () => {
     expect(bits[0]).toHaveTextContent('1')
 })
 
+test('deleting a byte recalculates accurately', () => {
+    render(<BitInteraction startingIntValue={32896}/>)
+    const removeByte = screen.getByTestId('remove-byte')
+    const intValue = screen.getByTestId('int-value')
+    expect(intValue).toHaveValue('32896')
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(bits.length).toBe(16)
+    expect(bits[15]).toHaveTextContent('1')
+    expect(bits[14]).toHaveTextContent('0')
+    expect(bits[7]).toHaveTextContent('1')
+    expect(bits[6]).toHaveTextContent('0')
+    fireEvent.click(removeByte)
+    bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(intValue).toHaveValue('128')
+    expect(bits.length).toBe(8)
+    expect(bits[7]).toHaveTextContent('1')
+    expect(bits[6]).toHaveTextContent('0')
+})
+
 test('decrementing does not reduce bits', () => {
     render(<BitInteraction startingIntValue={256} numberOfBits={9} />)
     let bits = screen.getAllByTestId(/^bit-[0-9]+/)
@@ -216,7 +244,7 @@ test('decrementing does not reduce bits', () => {
     
 })
 
-test('incrementing can add bits', () => {
+test('incrementing may add a bit', () => {
     render(<BitInteraction startingIntValue={3} numberOfBits={2} />)
     let bits = screen.getAllByTestId(/^bit-[0-9]+/)
     expect(bits[0]).toHaveTextContent('1')
@@ -231,6 +259,24 @@ test('incrementing can add bits', () => {
     expect(bits[1]).toHaveTextContent('0')
     expect(bits[2]).toHaveTextContent('1')
 })
+
+test('incrementing may add a byte', () => {
+    render(<BitInteraction startingIntValue={255} numberOfBits={8} />)
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    const add = screen.getByTestId('inc-value')
+    const intValue = screen.getByTestId('int-value')
+    fireEvent.click(add)
+    bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(intValue).toHaveValue('256')
+    expect(bits).toHaveLength(16)
+    cleanup()
+    render(<BitInteraction startingIntValue={65535} numberOfBits={8} />)
+    fireEvent.click(add)
+    bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(intValue).toHaveValue('65536')
+    expect(bits).toHaveLength(24)
+})
+
 
 test('can see number of bits', () => {
     render(<BitInteraction numberOfBits={3} />);
