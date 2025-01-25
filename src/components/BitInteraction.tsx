@@ -23,8 +23,9 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     
     const calculateChunkedBitArray = (value: number, useBitCount: number = bitCount): string[][] => {
         const binaryString = value.toString(2);
+        const bitsRemaining = useBitCount
         const paddedBinaryString = binaryString.padStart(
-            Math.ceil(binaryString.length / useBitCount) * useBitCount,
+            Math.ceil(binaryString.length / bitsRemaining) * bitsRemaining,
             "0"
         );
         return chunkBitArray(paddedBinaryString.split("").toReversed());
@@ -37,7 +38,8 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     // Update chunked bit array when intValue changes
     useEffect(() => {
         setChunkedBitArray((prevChunkedBitArray) => {
-            const newChunkedBitArray = calculateChunkedBitArray(intValue)
+            const newChunkedBitArray = calculateChunkedBitArray(intValue, bitCount)
+            console.log(`new: ${newChunkedBitArray}, prev:${prevChunkedBitArray}`)
             if (_.isEqual(prevChunkedBitArray,newChunkedBitArray)) {
                 return prevChunkedBitArray
             } else {
@@ -52,7 +54,8 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     // Update intValue when chunkedBitArray changes
     useEffect(() => {
         setIntValue((prevIntValue) => {
-            const updatedBits = chunkedBitArray.flat().slice(0, bitCount)
+            console.log(`chunkedBitArray = ${chunkedBitArray}, prevIntValue = ${prevIntValue}, ${bitCount}`)
+            const updatedBits = chunkedBitArray.flat()
             console.log(`updatedBits = ${updatedBits}, ${bitCount}`)
             const newIntValue = parseInt([...updatedBits].toReversed().join(""), 2)
         
@@ -77,7 +80,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
 
     const removeBit = () => {
         if (bitCount > 1) {
-            setBitCount((prevBitCount) => prevBitCount - 1)
+            setBitCount(bitCount - 1)
         }
     }
 

@@ -173,6 +173,65 @@ test('can delete a bit from the interaction', () => {
     expect(bits).toHaveLength(2);
 })
 
+test('can delete a bit set to 1 recalculates', () => {
+    render(<BitInteraction startingIntValue={255}/>)
+    const removeBit = screen.getByTestId('remove-bit')
+    const intValue = screen.getByTestId('int-value')
+    expect(intValue).toHaveValue('255')
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(bits.length).toBe(8)
+    expect(bits[7]).toHaveTextContent('1')
+    expect(bits[6]).toHaveTextContent('1')
+    expect(bits[5]).toHaveTextContent('1')
+    expect(bits[4]).toHaveTextContent('1')
+    expect(bits[3]).toHaveTextContent('1')
+    expect(bits[2]).toHaveTextContent('1')
+    expect(bits[1]).toHaveTextContent('1')
+    expect(bits[0]).toHaveTextContent('1')
+    fireEvent.click(removeBit)
+    bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(intValue).toHaveValue('127')
+    expect(bits.length).toBe(7)
+    expect(bits[6]).toHaveTextContent('1')
+    expect(bits[5]).toHaveTextContent('1')
+    expect(bits[4]).toHaveTextContent('1')
+    expect(bits[3]).toHaveTextContent('1')
+    expect(bits[2]).toHaveTextContent('1')
+    expect(bits[1]).toHaveTextContent('1')
+    expect(bits[0]).toHaveTextContent('1')
+})
+
+test('decrementing does not reduce bits', () => {
+    render(<BitInteraction startingIntValue={256} numberOfBits={9} />)
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(bits).toHaveLength(9)
+    expect(bits[8]).toHaveTextContent('1')
+    expect(bits[0]).toHaveTextContent('0')
+    const decrement = screen.getByTestId('dec-value');
+    fireEvent.click(decrement)
+    bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(bits[0]).toHaveTextContent('1')
+    expect(bits[8]).toHaveTextContent('0')
+    expect(bits).toHaveLength(9)
+    
+})
+
+test('incrementing can add bits', () => {
+    render(<BitInteraction startingIntValue={3} numberOfBits={2} />)
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(bits[0]).toHaveTextContent('1')
+    expect(bits[1]).toHaveTextContent('1')
+    const add = screen.getByTestId('inc-value')
+    fireEvent.click(add)
+    bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    const bitCount = screen.getByTestId('bit-count')
+    expect(bitCount).toHaveTextContent(bits.length.toString())
+    expect(bits.length).toBe(3) // would become 0b100
+    expect(bits[0]).toHaveTextContent('0')
+    expect(bits[1]).toHaveTextContent('0')
+    expect(bits[2]).toHaveTextContent('1')
+})
+
 test('can see number of bits', () => {
     render(<BitInteraction numberOfBits={3} />);
     let textbox = screen.getByTestId('bit-count');
@@ -192,7 +251,7 @@ test('can see character', () => {
     fireEvent.click(bits[6]);
     fireEvent.click(bits[0]);
     expect(textbox).toHaveValue('A');
-});
+})
 
 test('can see bit #s', () => {
     render(<BitInteraction />);
@@ -305,18 +364,18 @@ test('only display characters up to int 65535',() => {
 
 test('can increment the integer value', () => {
     render(<BitInteraction />)
-    let bits = screen.getAllByTestId(/^bit-[0-9]+/);
-    expect(bits.length).toBe(8);
-    const up = screen.getByTestId('inc-value');
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(bits.length).toBe(8)
+    const up = screen.getByTestId('inc-value')
     
 
     _.range(8).forEach(i => {
         fireEvent.click(bits[i]);
     });
-    const intVal = screen.getByTestId('int-value');
-    expect(intVal).toHaveValue('255');
-    fireEvent.click(up);
-    bits = screen.getAllByTestId(/^bit-[0-9]+/);
+    const intVal = screen.getByTestId('int-value')
+    expect(intVal).toHaveValue('255')
+    fireEvent.click(up)
+    bits = screen.getAllByTestId(/^bit-[0-9]+/)
     expect(intVal).toHaveValue('256')    
 })
 
@@ -333,16 +392,17 @@ test('can increment the integer value', () => {
 //     expect(bits[0]).toHaveTextContent('0');
 // })
 
-// test('can decrement the integer value', () => {
-//     render(<BitInteraction numberOfBits={9}/>)
-//     const down = screen.getByTestId('dec-value');
-//     const intVal = screen.getByTestId('int-value');
-//     let bits = screen.getAllByTestId(/^bit-[0-9]+/);    
-//     fireEvent.click(bits[8]);  
-//     expect(intVal).toHaveValue('256')  
-//     fireEvent.click(down);
-//     expect(intVal).toHaveValue('255')
-// })
+test('can decrement the integer value', () => {
+    render(<BitInteraction numberOfBits={9}/>)
+    const down = screen.getByTestId('dec-value');
+    const intVal = screen.getByTestId('int-value');
+    const bits = screen.getAllByTestId(/^bit-[0-9]+/);    
+    fireEvent.click(bits[8]);  
+    expect(intVal).toHaveValue('256')  
+    fireEvent.click(down);
+    expect(intVal).toHaveValue('255')
+})
+
 
 // test('Rebuild the bit array based on the decremented value', () => {
 //     render(<BitInteraction />)
