@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import _, { isEmpty } from 'lodash';
+import _, {isEqual} from 'lodash';
 import Bit from "./Bit";
 import "../css/BitInteraction.css";
 
@@ -12,98 +12,83 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     const [bitCount, setBitCount] = useState(numberOfBits)
     const [intValue, setIntValue] = useState(startingIntValue)
     const [internalIntValue, setInternalIntValue] = useState(intValue)
-    const [hexValue, setHexValue] = useState('0x00')
 
-
-    const calculateChunkedBitArray = (value: number, bitCount: number): string[][] => {
+    const toHex = (newIntValue:number): string => {
+        const numBytes = Math.ceil(bitCount / 8);
+        return '0x' + newIntValue.toString(16).padStart(2*numBytes, '0').toUpperCase()
+    }
+    
+    const [hexValue, setHexValue] = useState(toHex(intValue))
+    const chunkBitArray = (bits: string[]) => _.chunk(bits,8)
+    
+    const calculateChunkedBitArray = (value: number, useBitCount: number = bitCount): string[][] => {
         const binaryString = value.toString(2);
         const paddedBinaryString = binaryString.padStart(
-            Math.ceil(binaryString.length / bitCount) * bitCount,
+            Math.ceil(binaryString.length / useBitCount) * useBitCount,
             "0"
         );
-        return _.chunk(paddedBinaryString.split("").toReversed(), 8);
-    };
-
-    const chunkBitArray = (bits: string[]) => _.chunk(bits,8)
+        return chunkBitArray(paddedBinaryString.split("").toReversed());
+    }
 
     const [chunkedBitArray, setChunkedBitArray] = useState(calculateChunkedBitArray(startingIntValue, numberOfBits))
     const chunkedBitArrayRef = useRef(chunkedBitArray);
     const intValueRef = useRef(intValue)
 
-    // Update chunked bit array when `intValue` changes
+    // Update chunked bit array when intValue changes
     useEffect(() => {
-        if (intValue === intValueRef.current) return // ignore the initial update
-        console.log("intValue or bitCount has changed")
-        setChunkedBitArray(calculateChunkedBitArray(intValue, bitCount));
-        console.log(`setting internalIntValue to: ${intValue}`)
-        setInternalIntValue(intValue);
-    }, [intValue, bitCount]);
+        setChunkedBitArray((prevChunkedBitArray) => {
+            const newChunkedBitArray = calculateChunkedBitArray(intValue)
+            if (_.isEqual(prevChunkedBitArray,newChunkedBitArray)) {
+                return prevChunkedBitArray
+            } else {
+                return newChunkedBitArray
+            }
+        })
+        setInternalIntValue(intValue)
+        setHexValue(toHex(intValue))
+    }, [intValue, bitCount])
 
-    useEffect(() =>{
-        if (chunkedBitArray === chunkedBitArrayRef.current) return // ignore the initial update
-        console.log("chunkedBitsArray has changed")
-        const numBytes = Math.ceil(bitCount / 8);
-        const updatedBits = chunkedBitArray.flat()
-        const newIntValue = (parseInt([...updatedBits].toReversed().join(""), 2) || 0)
-        console.log(`newIntValue = ${newIntValue}`)
-        setHexValue('0x' + newIntValue.toString(16).padStart(2*numBytes, '0').toUpperCase());
-        setIntValue(newIntValue)       
-    }, [chunkedBitArray])
 
+    // Update intValue when chunkedBitArray changes
+    useEffect(() => {
+        setIntValue((prevIntValue) => {
+            const updatedBits = chunkedBitArray.flat().slice(0, bitCount)
+            console.log(`updatedBits = ${updatedBits}, ${bitCount}`)
+            const newIntValue = parseInt([...updatedBits].toReversed().join(""), 2)
+        
+            // Avoid redundant updates by checking if intValue actually changes
+            if (newIntValue !== prevIntValue) {
+                console.log(`chunkedBitArray changed, updating intValue to ${newIntValue}`);
+                return newIntValue;
+            }
+            return prevIntValue; // No changes, keep the same
+        });
+    }, [chunkedBitArray, bitCount]);
 
     console.log(`bits as binary string = ${chunkedBitArray.flat().toReversed().join("")}`)
-
 
  
     const decrementValue = () => setIntValue(internalIntValue-1)
     const incrementValue = () => setIntValue(internalIntValue+1)
 
     const addBit = () => {
-        setBitCount(bitCount + 1);
-        console.log(`bitCount... ${bitCount}`)
-        const bits = chunkedBitArray.flat()
-        const updatedBits = [...bits, '0'];
-        console.log(`bits within addBit function... ${updatedBits}`)
-        const newChunkedArray = chunkBitArray(updatedBits)
-        setChunkedBitArray(newChunkedArray);
-    }
-
-    //     // Increment the bit count
-    //     setBitCount((prevBitCount) => prevBitCount + 1);
-    
-    //     // Update chunkedBitArray using the current value in the ref
-    //     const currentBits = chunkedBitArrayRef.current.flat();
-    //     const updatedBits = [...currentBits, "0"];
-    //     const newChunkedArray = chunkBitArray(updatedBits, 8);
-
-    //     setChunkedBitArray(newChunkedArray);
-    //     return updatedBits.length
-    // };
-
-    const addByte = () => {
-        const bitsRemaining = 8 - ( bitCount % 8 );
-        const bits = chunkedBitArray.flat(); // Flatten the current chunked array
-        setBitCount(bitCount+bitsRemaining);
-        const newBits = [...bits].concat(Array(bitsRemaining).fill(0));
-        setChunkedBitArray(chunkBitArray(newBits))
-    }
-
-    const removeByte = () => {
-        const bitsRemaining = ( bitCount % 8 ) || 8;
-        const bits = chunkedBitArray.flat(); // Flatten the current chunked array
-        setBitCount(bitCount-bitsRemaining);
-        const newBits = [...bits].toSpliced(Math.ceil(bitCount / 8),bitsRemaining);
-        setChunkedBitArray(chunkBitArray(newBits))
+        setBitCount((prevBitCount) => prevBitCount + 1)
     }
 
     const removeBit = () => {
         if (bitCount > 1) {
-            const newBitCount = bitCount - 1
-            setBitCount(newBitCount);
-            const bits = chunkedBitArray.flat()
-            const updatedBits = _.chunk([...bits].slice(0, newBitCount),8);
-            setChunkedBitArray(updatedBits);
+            setBitCount((prevBitCount) => prevBitCount - 1)
         }
+    }
+
+    const addByte = () => {
+        const bitsRemaining = 8 - ( bitCount % 8 );
+        setBitCount((prevBitCount) => prevBitCount + bitsRemaining)
+    }
+
+    const removeByte = () => {
+        const bitsRemaining = ( bitCount % 8 ) || 8;
+        setBitCount((prevBitCount) => prevBitCount - bitsRemaining) ;
     }
 
     const handleBitChange = (index: number) => {
@@ -199,7 +184,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                             disabled={true}
                             id="bit-count"
                             data-testid="bit-count"
-                            defaultValue={bitCount}
+                            value={bitCount}
                             title={bitCount.toString()}
                         />
                     </div>
@@ -212,7 +197,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                             disabled={true}
                             data-testid="hex-value"
                             id="hex-value"
-                            defaultValue={hexValue}
+                            value={hexValue}
                             title={hexValue}
                         />
                     </div>
@@ -224,7 +209,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                         <input type="text"                            
                             id="int-value"
                             data-testid="int-value"
-                            defaultValue={internalIntValue.toString()}
+                            value={internalIntValue.toString()}
                             title={internalIntValue.toString()}
                             // onClick={ (e) => setEditable({'int-value':true}) }
                         />
@@ -257,7 +242,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                             disabled={true}
                             id="char-value"
                             data-testid="char-value"
-                            defaultValue={String.fromCodePoint(internalIntValue)}
+                            value={String.fromCodePoint(internalIntValue)}
                             title={String.fromCodePoint(internalIntValue)}
                         />
                     </div>
@@ -273,7 +258,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                             disabled={true}
                             id="color-value"
                             data-testid="color-value"
-                            defaultValue={makeHexColor(internalIntValue)}
+                            value={makeHexColor(internalIntValue)}
                             title={makeHexColor(internalIntValue)}
                             style = {{ 
                                 backgroundColor: (internalIntValue <= 16777215) ? 
