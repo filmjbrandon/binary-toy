@@ -464,16 +464,58 @@ test('can decrement the integer value', () => {
     
 // })
 
-// test('can set bit values from input', () => {
-//     render(<BitInteraction />);
-//     const textbox = screen.getByTestId('int-value');
-//     fireEvent.click(textbox);
-//     expect(textbox).toBeEnabled();    
-//     userEvent.type(textbox, '65');
-//     expect(textbox).toHaveValue('65');
-//     let bits = screen.getAllByTestId(/^bit-[0-9]+/);
-//     expect(bits).toHaveLength(7);
-//     expect(bits[0]).toHaveTextContent('1');
-//     expect(bits[6]).toHaveTextContent('1');
-//     expect(textbox).toBeDisabled();
-// });
+test('can set bit values from input', () => {
+    render(<BitInteraction />);
+    const textbox = screen.getByTestId('int-value');
+    fireEvent.click(textbox);
+    expect(textbox).toBeEnabled();    
+    userEvent.type(textbox, '65');
+    expect(textbox).toHaveValue('65');
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/);
+    expect(bits).toHaveLength(8);
+});
+
+test('can set bit count from input', () => {
+    render(<BitInteraction />);
+    const textbox = screen.getByTestId('bit-count');
+    expect(textbox).toHaveValue('8');
+    fireEvent.click(textbox);
+    expect(textbox).toBeEnabled();    
+    userEvent.clear(textbox);
+    userEvent.type(textbox, '1');
+    userEvent.type(textbox, '2');
+    expect(textbox).toHaveValue('12');
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/);
+    expect(bits).toHaveLength(12);
+});
+
+test('can set hex value from input', () => {
+    render(<BitInteraction />);
+    const textbox = screen.getByTestId('hex-value');
+    fireEvent.click(textbox);
+    expect(textbox).toBeEnabled();    
+    userEvent.type(textbox, '{backspace}');
+    userEvent.type(textbox, 'FF');
+    expect(textbox).toHaveValue('0xFF');
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/);
+    expect(bits).toHaveLength(12);
+});
+
+test('can flip all bits in a byte', () => {
+    render(<BitInteraction numberOfBits={16}/>)
+    const flipAll = screen.getAllByTestId('flip-byte')
+    const intValue = screen.getByTestId('int-value')
+    fireEvent.click(flipAll[0])
+    fireEvent.click(flipAll[1])
+    expect(intValue).toHaveValue('65535')
+})
+
+test('can reset all bits in a byte', () => {
+    render(<BitInteraction startingIntValue={65535}/>)
+    const resetAll = screen.getAllByTestId('reset-byte')
+    const intValue = screen.getByTestId('int-value')
+    fireEvent.click(resetAll[0])
+    expect(intValue).toHaveValue('255')
+    fireEvent.click(resetAll[1])
+    expect(intValue).toHaveValue('0')
+})

@@ -9,6 +9,7 @@ interface BitInteractionProps {
 }
 
 const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, startingIntValue = 0 }) => {
+    const MAXBITS = 64
     const [bitCount, setBitCount] = useState(numberOfBits)
     const [intValue, setIntValue] = useState(startingIntValue)
     const [internalIntValue, setInternalIntValue] = useState(intValue)
@@ -78,11 +79,26 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
 
     console.log(`bits as binary string = ${chunkedBitArray.flat().toReversed().join("")}`)
 
+
+    const shiftBitsByChunk = (chunk: string[], direction: 'left' | 'right', steps: number = 1): string[] => {
+        const length = chunk.length;
+        const normalizedSteps = steps % length;
+
+        if (direction === 'left') {
+            return chunk.slice(normalizedSteps).concat(chunk.slice(0, normalizedSteps));
+        } else if (direction === 'right') {
+            return chunk.slice(-normalizedSteps).concat(chunk.slice(0, -normalizedSteps));
+        }
+
+        return chunk;
+    };
  
     const decrementValue = () => setIntValue(internalIntValue-1)
     const incrementValue = () => setIntValue(internalIntValue+1)
 
     const addBit = () => {
+        if (bitCount >= MAXBITS)
+            return
         setBitCount((prevBitCount) => prevBitCount + 1)
     }
 
@@ -96,6 +112,8 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     }
 
     const addByte = () => {
+        if (bitCount >= MAXBITS)
+            return
         const bitsRemaining = 8 - ( bitCount % 8 );
         setBitCount((prevBitCount) => prevBitCount + bitsRemaining)
     }
@@ -122,6 +140,64 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
         setIntValue(isNaN(value) ? 0 : value); // Fallback to 0 if input is invalid
     }
 
+    const handleBitCountChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const value = parseInt(event.target.value, 10); // Convert input to number
+        setBitCount(isNaN(value) 
+            ? 0 
+            : value > MAXBITS ? MAXBITS : value); // Fallback to 0 if input is invalid
+    }
+
+    const handleHexChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const value = parseInt(event.target.value, 16); // Convert input to hex
+        setHexValue(isNaN(value) ? '0x00' : '0x'+value); // Fallback to 0 if input is invalid
+    }
+
+    const flipByte = (event: React.MouseEvent<HTMLButtonElement>): void => {
+        const chunkIndex = Number(event.currentTarget.id.substring(10)); // Convert input to number
+
+        setChunkedBitArray((prevChunkedBitArray) => {
+            return prevChunkedBitArray.map((chunk, index) => {
+                // If this is the target chunk, toggle all its bits
+                if (index === chunkIndex) {
+                    return chunk.map((bit) => (bit === '0' ? '1' : '0'));
+                }
+                // Otherwise, return the chunk as is
+                return chunk;
+            });
+        });
+    }
+
+    const resetByte = (event: React.MouseEvent<HTMLButtonElement>): void => {
+        const chunkIndex = Number(event.currentTarget.id.substring(11)); // Convert input to number
+
+        setChunkedBitArray((prevChunkedBitArray) => {
+            return prevChunkedBitArray.map((chunk, index) => {
+                // If this is the target chunk, toggle all its bits
+                if (index === chunkIndex) {
+                    return chunk.map( (bit) => '0' );
+                }
+                // Otherwise, return the chunk as is
+                return chunk;
+            });
+        });
+    }
+
+    const shiftByte = (event: React.MouseEvent<HTMLButtonElement>): void => {
+        
+        const chunkIndex = Number(event.currentTarget.id.substring(11)); // Convert input to number
+ //       (chunkIndex: number, direction: 'left' | 'right', steps: number = 1) => {
+
+            setChunkedBitArray((prevChunkedBitArray) => {
+            return prevChunkedBitArray.map((chunk, index) => {
+                if (index === chunkIndex) {
+                    return shiftBitsByChunk(chunk, 'left', 1);
+                }
+                return chunk;
+            });
+        });
+    };
+
+
     const resetBits = () => {
         const bitArray = Array(bitCount).fill('0')
         setChunkedBitArray(chunkBitArray(bitArray))
@@ -139,13 +215,26 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     return (
         <div data-testid="bit-interaction" className="interaction">
             <div data-testid="bits" className="bits">
-
                 {chunkedBitArray.map((chunk, chunkIndex) => (
                     <div
                         key={"byte-" + chunkIndex}
                         className="byte"
                         data-testid="byte"
                         id={"byte-" + chunkIndex}>
+                        <div className="byte-actions">
+                            <button 
+                                id={`flip-byte-${chunkIndex}`} 
+                                data-testid="flip-byte" 
+                                value=""
+                                onClick={flipByte}
+                            >Flip</button>
+                            <button 
+                                id={`reset-byte-${chunkIndex}`} 
+                                data-testid="reset-all" 
+                                value=""
+                                onClick={resetByte}
+                            >Reset</button>
+                        </div>
                         {chunk.map((bitVal, bitIndex) => (
                             <Bit
                                 key={`${chunkIndex}-${bitIndex}`}
@@ -162,8 +251,8 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                 <label htmlFor="controls">Controls</label>
 
                 <div className="buttons">
-
                     <button
+                        hidden={bitCount === MAXBITS}
                         data-testid="add-bit"
                         onClick={addBit}>
                         Add Bit
@@ -179,6 +268,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                         Reset Bits
                     </button>
                     <button
+                        hidden={bitCount === MAXBITS}
                         data-testid="add-byte"
                         onClick={addByte}>
                         Add Byte
@@ -200,7 +290,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                             # of Bits
                         </label>
                         <input type="text"
-                            disabled={true}
+                            onChange={handleBitCountChange} 
                             id="bit-count"
                             data-testid="bit-count"
                             value={bitCount}
@@ -214,6 +304,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                         </label>
                         <input type="text"
                             disabled={true}
+                            readOnly
                             data-testid="hex-value"
                             id="hex-value"
                             value={hexValue}
@@ -225,11 +316,12 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                         <label htmlFor="int-value">
                             IntVal
                         </label>
-                        <input type="text"                            
+                        <input type="text"    
                             id="int-value"
                             data-testid="int-value"
                             value={internalIntValue.toString()}
                             title={internalIntValue.toString()}
+                            onChange={handleIntChange} 
                             // onClick={ (e) => setEditable({'int-value':true}) }
                         />
                         {/* <button 
@@ -240,10 +332,12 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                         </button> */}
                         <div className="inc-dec">
                             <span
+                                hidden={internalIntValue >= Math.pow(2, MAXBITS)}                            
                                 data-testid="inc-value"
                                 onClick={(e)=>incrementValue()} 
                                 className="inc">{String.fromCodePoint(0x25b2)}</span>
-                            <span 
+                            <span   
+                                hidden={internalIntValue === 0} 
                                 data-testid="dec-value"
                                 onClick={(e)=>decrementValue()} 
                                 className="dec">{String.fromCodePoint(0x25bc)}</span>
@@ -259,6 +353,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                         </label>
                         <input type="text"
                             disabled={true}
+                            readOnly
                             id="char-value"
                             data-testid="char-value"
                             value={String.fromCodePoint(internalIntValue)}
@@ -275,6 +370,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                         </label>
                         <input type="text"
                             disabled={true}
+                            readOnly
                             id="color-value"
                             data-testid="color-value"
                             value={makeHexColor(internalIntValue)}
