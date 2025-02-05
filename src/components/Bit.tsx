@@ -18,7 +18,7 @@ const Bit: React.FC<BitProps> = ({ index = 0, defaultValue = 0, onToggleBit }) =
     }
 
     return (
-        <div className="bit-container">
+        <div className="bit-container code">
             <label
                 data-testid="bit-label"
                 htmlFor={`bit-${index}`}
