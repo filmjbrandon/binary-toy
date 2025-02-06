@@ -23,3 +23,8 @@ yarn-debug.log*
 yarn-error.log*
 tsconfig.tsbuildinfo
 dist/*
+
+# amplify
+.amplify
+amplify_outputs*
+amplifyconfiguration*
