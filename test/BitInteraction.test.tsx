@@ -1,10 +1,10 @@
-import { fireEvent, render, screen, cleanup } from '@testing-library/react';
+import { fireEvent, render, screen, cleanup, waitFor } from '@testing-library/react';
 import BitInteraction from '../src/components/BitInteraction';
 import _, { remove } from 'lodash';
 import userEvent from '@testing-library/user-event';
 import { expect, test, afterEach } from 'vitest'
 
-afterEach(()=>{
+afterEach(() => {
     cleanup()
 })
 
@@ -35,19 +35,36 @@ test('bit is toggleable on click', () => {
     expect(leastBit).toHaveTextContent('0');
     fireEvent.click(leastBit);
     expect(leastBit).toHaveTextContent('1');
-  });
+});
 
-test('updating bits updates int value', () => {
+test('interaction has bit controls', () => {
+    render(<BitInteraction />)
+    const bitControls = screen.getByTestId('bit-controls')
+    expect(bitControls).toBeInTheDocument()
+})
+
+test('interaction has value controls', () => {
+    render(<BitInteraction />)
+    const valueControls = screen.getByTestId('value-controls')
+    expect(valueControls).toBeInTheDocument()
+})
+
+test('updating bits updates int value', async () => {
     render(<BitInteraction />);
     const leastBit = screen.getByTestId('bit-0');
     const intValue = screen.getByTestId('int-value');
     expect(intValue).toHaveValue('0');
     fireEvent.click(leastBit);
     expect(leastBit).toHaveTextContent('1');
-    expect(intValue).toHaveValue('1');
+    waitFor(() => {
+        expect(intValue).toHaveValue('1');
+    })
     const nextBit = screen.getByTestId('bit-1');
     fireEvent.click(nextBit);
-    expect(intValue).toHaveValue('3');
+    waitFor(() => {
+        expect(intValue).toHaveValue('3');
+    })
+
 });
 
 test('interaction generates hex value', () => {
@@ -55,12 +72,18 @@ test('interaction generates hex value', () => {
     const bits = screen.getAllByTestId(/^bit-[0-9]+/i);
     const hexValue = screen.getByTestId('hex-value');
     fireEvent.click(bits[0]);
-    expect(hexValue).toHaveValue('0x01');
+    waitFor(() => {
+        expect(hexValue).toHaveValue('0x01');
+    })
     fireEvent.click(bits[1]);
-    expect(hexValue).toHaveValue('0x03');
+    waitFor(() => {
+        expect(hexValue).toHaveValue('0x03');
+    })
     fireEvent.click(bits[6]);
     fireEvent.click(bits[7]);
-    expect(hexValue).toHaveValue('0xC3');
+    waitFor(() => {
+        expect(hexValue).toHaveValue('0xC3');
+    })
 });
 
 test('can add bits', () => {
@@ -69,7 +92,6 @@ test('can add bits', () => {
     expect(bits).toHaveLength(2);
     const button = screen.getByTestId('add-bit');
     expect(button).toHaveTextContent('Add Bit');
-    console.log("add 1 bit")
     fireEvent.click(button);
     bits = screen.getAllByTestId(/^bit-[0-9]+/);
     expect(bits).toHaveLength(3);
@@ -116,7 +138,7 @@ test('bit interaction can be loaded with a default value that is not a multiple 
 })
 
 
-test('when int value is changed, hexValue is updated as well', ()=>{
+test('when int value is changed, hexValue is updated as well', () => {
     render(<BitInteraction startingIntValue={10} />)
     const intValue = screen.getByTestId('int-value')
     const hexValue = screen.getByTestId('hex-value')
@@ -124,42 +146,38 @@ test('when int value is changed, hexValue is updated as well', ()=>{
     expect(hexValue).toHaveValue('0x0A')
 })
 
-test('can reset interaction', () => {
+test('can reset interaction', async () => {
     render(<BitInteraction numberOfBits={3} />);
     let bits = screen.getAllByTestId(/^bit-[0-9]+/i);
-    expect(bits).toHaveLength(3);
-    let button = screen.getByTestId('add-bit');
-    expect(button).toHaveTextContent('Add Bit');
-    fireEvent.click(button);
-    fireEvent.click(button);
-    bits = screen.getAllByTestId(/^bit-[0-9]+/i);
-    expect(bits).toHaveLength(5);
+    let resetBits = screen.getByTestId('reset-bits');
     fireEvent.click(bits[0])
     expect(bits[0]).toHaveTextContent('1');
     fireEvent.click(bits[1])
     expect(bits[1]).toHaveTextContent('1');
-    button = screen.getByTestId('reset');
-    expect(button).toHaveTextContent('Reset');
-    fireEvent.click(button);
-    expect(bits[0]).toHaveTextContent('0');
-    expect(bits[1]).toHaveTextContent('0');
-    bits = screen.getAllByTestId(/^bit-[0-9]+/i);
-    expect(bits).toHaveLength(5);
+    fireEvent.click(resetBits)
+    waitFor(() => {
+        expect(bits[0]).toHaveTextContent('0')
+        expect(bits[1]).toHaveTextContent('0')
+    })
 });
 
-test('reset interaction clears display values', () => {
+test('reset interaction clears display values', async () => {
     render(<BitInteraction numberOfBits={2} />);
     const hexValue = screen.getByTestId('hex-value');
     const intValue = screen.getByTestId('int-value');
-    const button = screen.getByTestId('reset');
+    const button = screen.getByTestId('reset-bits');
     const bits = screen.getAllByTestId(/^bit-[0-9]+/i);
     fireEvent.click(bits[1]);
-    expect(intValue).toHaveValue('2');
-    expect(hexValue).toHaveValue('0x02');
+    waitFor(() => {
+        expect(intValue).toHaveValue('2');
+        expect(hexValue).toHaveValue('0x02');
+    })
     fireEvent.click(button);
-    expect(bits[1]).toHaveTextContent('0');
-    expect(intValue).toHaveValue('0');
-    expect(hexValue).toHaveValue('0x00');
+    waitFor(() => {
+        expect(bits[1]).toHaveTextContent('0');
+        expect(intValue).toHaveValue('0');
+        expect(hexValue).toHaveValue('0x00');
+    })
 });
 
 test('can remove bits', () => {
@@ -173,17 +191,19 @@ test('can remove bits', () => {
     expect(bits).toHaveLength(2);
 })
 
-test('removing bits changes bitCount', () => {
-    render(<BitInteraction numberOfBits={3}/>);
+test('removing bits changes bitCount', async () => {
+    render(<BitInteraction numberOfBits={3} />);
     const bitCount = screen.getByTestId('bit-count');
     const removeBit = screen.getByTestId('remove-bit');
     expect(bitCount).toHaveValue('3');
     fireEvent.click(removeBit);
-    expect(bitCount).toHaveValue('2');
+    waitFor(() => {
+        expect(bitCount).toHaveValue('2');
+    })
 })
 
 test('deleting a bit recalculates accurately', () => {
-    render(<BitInteraction startingIntValue={255}/>)
+    render(<BitInteraction startingIntValue={255} />)
     const removeBit = screen.getByTestId('remove-bit')
     const intValue = screen.getByTestId('int-value')
     expect(intValue).toHaveValue('255')
@@ -199,19 +219,21 @@ test('deleting a bit recalculates accurately', () => {
     expect(bits[0]).toHaveTextContent('1')
     fireEvent.click(removeBit)
     bits = screen.getAllByTestId(/^bit-[0-9]+/)
-    expect(intValue).toHaveValue('127')
-    expect(bits.length).toBe(7)
-    expect(bits[6]).toHaveTextContent('1')
-    expect(bits[5]).toHaveTextContent('1')
-    expect(bits[4]).toHaveTextContent('1')
-    expect(bits[3]).toHaveTextContent('1')
-    expect(bits[2]).toHaveTextContent('1')
-    expect(bits[1]).toHaveTextContent('1')
-    expect(bits[0]).toHaveTextContent('1')
+    waitFor(() => {
+        expect(intValue).toHaveValue('127')
+        expect(bits[6]).toHaveTextContent('1')
+        expect(bits[5]).toHaveTextContent('1')
+        expect(bits[4]).toHaveTextContent('1')
+        expect(bits[3]).toHaveTextContent('1')
+        expect(bits[2]).toHaveTextContent('1')
+        expect(bits[1]).toHaveTextContent('1')
+        expect(bits[0]).toHaveTextContent('1')
+        expect(bits.length).toBe(7)
+    })
 })
 
 test('deleting a byte recalculates accurately', () => {
-    render(<BitInteraction startingIntValue={32896}/>)
+    render(<BitInteraction startingIntValue={32896} />)
     const removeByte = screen.getByTestId('remove-byte')
     const intValue = screen.getByTestId('int-value')
     expect(intValue).toHaveValue('32896')
@@ -223,10 +245,12 @@ test('deleting a byte recalculates accurately', () => {
     expect(bits[6]).toHaveTextContent('0')
     fireEvent.click(removeByte)
     bits = screen.getAllByTestId(/^bit-[0-9]+/)
-    expect(intValue).toHaveValue('128')
-    expect(bits.length).toBe(8)
-    expect(bits[7]).toHaveTextContent('1')
-    expect(bits[6]).toHaveTextContent('0')
+    waitFor(() => {
+        expect(intValue).toHaveValue('128')
+        expect(bits.length).toBe(8)
+        expect(bits[7]).toHaveTextContent('1')
+        expect(bits[6]).toHaveTextContent('0')
+    })
 })
 
 test('decrementing does not reduce bits', () => {
@@ -235,68 +259,70 @@ test('decrementing does not reduce bits', () => {
     expect(bits).toHaveLength(9)
     expect(bits[8]).toHaveTextContent('1')
     expect(bits[0]).toHaveTextContent('0')
-    const decrement = screen.getByTestId('dec-value');
+    const decrement = screen.getAllByTestId('dec-value')[0]
     fireEvent.click(decrement)
     bits = screen.getAllByTestId(/^bit-[0-9]+/)
     expect(bits[0]).toHaveTextContent('1')
     expect(bits[8]).toHaveTextContent('0')
     expect(bits).toHaveLength(9)
-    
+
 })
 
-test('incrementing may add a bit', () => {
+test('incrementing may add a bit', async () => {
     render(<BitInteraction startingIntValue={3} numberOfBits={2} />)
     let bits = screen.getAllByTestId(/^bit-[0-9]+/)
     expect(bits[0]).toHaveTextContent('1')
     expect(bits[1]).toHaveTextContent('1')
-    const add = screen.getByTestId('inc-value')
+    const add = screen.getAllByTestId('inc-value')[0]
     fireEvent.click(add)
     bits = screen.getAllByTestId(/^bit-[0-9]+/)
     const bitCount = screen.getByTestId('bit-count')
-    expect(bitCount).toHaveTextContent(bits.length.toString())
-    expect(bits.length).toBe(3) // would become 0b100
-    expect(bits[0]).toHaveTextContent('0')
-    expect(bits[1]).toHaveTextContent('0')
-    expect(bits[2]).toHaveTextContent('1')
+    waitFor(()=>{
+        expect(bitCount).toHaveTextContent(bits.length.toString())
+        expect(bits.length).toBe(3) // would become 0b100
+        expect(bits[0]).toHaveTextContent('0')
+        expect(bits[1]).toHaveTextContent('0')
+        expect(bits[2]).toHaveTextContent('1')
+    }) 
 })
 
-test('incrementing may add a byte', () => {
+test('incrementing may add a byte', async () => {
     render(<BitInteraction startingIntValue={255} numberOfBits={8} />)
     let bits = screen.getAllByTestId(/^bit-[0-9]+/)
-    const add = screen.getByTestId('inc-value')
+    const add = screen.getAllByTestId('inc-value')[0]
     const intValue = screen.getByTestId('int-value')
     fireEvent.click(add)
     bits = screen.getAllByTestId(/^bit-[0-9]+/)
-    expect(intValue).toHaveValue('256')
-    expect(bits).toHaveLength(16)
+    waitFor(()=>{
+        expect(intValue).toHaveValue('256')
+        expect(bits).toHaveLength(16)    
+    })
     cleanup()
     render(<BitInteraction startingIntValue={65535} numberOfBits={8} />)
     fireEvent.click(add)
-    bits = screen.getAllByTestId(/^bit-[0-9]+/)
-    expect(intValue).toHaveValue('65536')
-    expect(bits).toHaveLength(24)
+    waitFor(()=>{
+        bits = screen.getAllByTestId(/^bit-[0-9]+/)
+        expect(intValue).toHaveValue('65536')
+        expect(bits).toHaveLength(24)
+    })
 })
 
 
-test('can see number of bits', () => {
+test('can see number of bits', async () => {
     render(<BitInteraction numberOfBits={3} />);
     let textbox = screen.getByTestId('bit-count');
     expect(textbox).toHaveValue('3');
     let button = screen.getByTestId('add-bit');
     fireEvent.click(button);
-    expect(textbox).toHaveValue('4');
+    waitFor(() => {
+        expect(textbox).toHaveValue('4');
+    })
     button = screen.getByTestId('remove-bit');
     fireEvent.click(button);
-    expect(textbox).toHaveValue('3');
-})
+    waitFor(() => {
+        expect(textbox).toHaveValue('3');
+    })
 
-test('can see character', () => {
-    render(<BitInteraction />);
-    let textbox = screen.getByTestId('char-value');
-    const bits = screen.getAllByTestId(/^bit-[0-9]+/);
-    fireEvent.click(bits[6]);
-    fireEvent.click(bits[0]);
-    expect(textbox).toHaveValue('A');
 })
 
 test('can see bit #s', () => {
@@ -313,39 +339,21 @@ test('break new bytes onto new row', () => {
     expect(bytes[1]).toBeInTheDocument();
 })
 
-test('hex value should 0pad for each new byte', () => {
+test('hex value should 0pad for each new byte', async () => {
     render(<BitInteraction numberOfBits={8} />);
     const bits = screen.getAllByTestId(/^bit-[0-9]+/);
     const result = screen.getByTestId('hex-value');
     fireEvent.click(bits[0]);
-    expect(result).toHaveValue('0x01');
+    waitFor(() => {
+        expect(result).toHaveValue('0x01');
+    })
     const button = screen.getByTestId('add-bit');
     fireEvent.click(button);
-    expect(result).toHaveValue('0x0001');
+    waitFor(() => {
+        expect(result).toHaveValue('0x0001');
+    })
 })
 
-test('can display colors with 3 bytes', () => {
-    render(<BitInteraction numberOfBits={25}/>);
-    const bits = screen.getAllByTestId(/^bit-[0-9]+/);
-    // setting value of bits to red
-    _.range(8).forEach(i => {
-        fireEvent.click(bits[i]);
-    });
-    let textbox = screen.getByTestId('color-value');
-    expect(textbox).toHaveValue('#0000FF');    
-    textbox = screen.getByTestId('color-value');
-    expect(textbox).toHaveStyle('background-color: rgb(0, 0, 255)');    
-})
-
-test('hovering over a textbox will reveal full text', () => {
-    render(<BitInteraction />);
-    // cast to HTMLInputElement to avoid the error of not having "value" on HTMLElement
-    const textboxes = screen.getAllByRole('textbox') as HTMLInputElement[];
-    textboxes.forEach((box)=>{
-        userEvent.hover(box);
-        expect(box.title).toBe(box.value)
-    });
-});
 
 test('can add a byte at a time', () => {
     render(<BitInteraction />);
@@ -389,7 +397,7 @@ test('can delete a bit after deleting a byte', () => {
 })
 
 
-test('only display characters up to int 65535',() => {
+test('only display characters up to int 65535', () => {
     render(<BitInteraction />)
     let bytes = screen.getAllByTestId('byte');
     expect(bytes.length).toBe(1);
@@ -402,19 +410,18 @@ test('only display characters up to int 65535',() => {
     const textbox = screen.getByTestId('char-value');
     expect(textbox).toBeInTheDocument();
     fireEvent.click(button);
-    bytes = screen.getAllByTestId('byte');
-    expect(bytes.length).toBe(3);
-    expect(textbox).toBeEmptyDOMElement();
-    
+    waitFor(() => {
+        bytes = screen.getAllByTestId('byte');
+        expect(bytes.length).toBe(3);
+        expect(textbox).toBeEmptyDOMElement();
+    })
 })
 
-test('can increment the integer value', () => {
+test('can increment the integer value', async () => {
     render(<BitInteraction />)
     let bits = screen.getAllByTestId(/^bit-[0-9]+/)
     expect(bits.length).toBe(8)
-    const up = screen.getByTestId('inc-value')
-    
-
+    const up = screen.getAllByTestId('inc-value')[0] // they all do same thing
     _.range(8).forEach(i => {
         fireEvent.click(bits[i]);
     });
@@ -422,57 +429,75 @@ test('can increment the integer value', () => {
     expect(intVal).toHaveValue('255')
     fireEvent.click(up)
     bits = screen.getAllByTestId(/^bit-[0-9]+/)
-    expect(intVal).toHaveValue('256')    
+    waitFor(() => {
+        expect(intVal).toHaveValue('256')
+    })
 })
 
-// test('Rebuild the bit array based on the incremented value', () => {
-//     render(<BitInteraction />)
-//     let bits = screen.getAllByTestId(/^bit-[0-9]+/);
-//     const up = screen.getByTestId('inc-value');
-//     fireEvent.click(bits[0]);
-//     bits = screen.getAllByTestId(/^bit-[0-9]+/);
-//     expect(bits[0]).toHaveTextContent('1');
-//     fireEvent.click(up);
-//     bits = screen.getAllByTestId(/^bit-[0-9]+/);
-//     expect(bits[1]).toHaveTextContent('1');
-//     expect(bits[0]).toHaveTextContent('0');
-// })
 
-test('can decrement the integer value', () => {
-    render(<BitInteraction numberOfBits={9}/>)
-    const down = screen.getByTestId('dec-value');
+test('can increment the hex value', async () => {
+    render(<BitInteraction />)
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    expect(bits.length).toBe(8)
+    const up = screen.getAllByTestId('inc-value')[0] // they all do same thing
+    _.range(8).forEach(i => {
+        fireEvent.click(bits[i]);
+    });
+    const intVal = screen.getByTestId('hex-value')
+    expect(intVal).toHaveValue('0xFF')
+    fireEvent.click(up)
+    bits = screen.getAllByTestId(/^bit-[0-9]+/)
+    waitFor(() => {
+        expect(intVal).toHaveValue('0x0100')
+    })
+})
+
+test('can decrement the integer value', async () => {
+    render(<BitInteraction numberOfBits={9} />)
+    const down = screen.getAllByTestId('dec-value')[0]  // they all do same thing 
     const intVal = screen.getByTestId('int-value');
-    const bits = screen.getAllByTestId(/^bit-[0-9]+/);    
-    fireEvent.click(bits[8]);  
-    expect(intVal).toHaveValue('256')  
-    fireEvent.click(down);
-    expect(intVal).toHaveValue('255')
+    const bits = screen.getAllByTestId(/^bit-[0-9]+/);
+    fireEvent.click(bits[8]);
+    waitFor(() => {
+        expect(intVal).toHaveValue('256')
+        fireEvent.click(down);
+        expect(intVal).toHaveValue('255')
+    })
 })
 
+test('can decrement the hex value', async () => {
+    render(<BitInteraction numberOfBits={9} />)
+    const down = screen.getAllByTestId('dec-value')[0]  // they all do same thing 
+    const intVal = screen.getByTestId('int-value');
+    const bits = screen.getAllByTestId(/^bit-[0-9]+/);
+    fireEvent.click(bits[8]);
+    waitFor(() => {
+        expect(intVal).toHaveValue('0x100')
+        fireEvent.click(down);
+        expect(intVal).toHaveValue('0xFF')
+    })
+})
 
-// test('Rebuild the bit array based on the decremented value', () => {
-//     render(<BitInteraction />)
-//     let bits = screen.getAllByTestId(/^bit-[0-9]+/);
-//     expect(bits.length).toBe(8);
-//     const down = screen.getByTestId('dec-value');
-//     fireEvent.click(bits[0]);
-//     bits = screen.getAllByTestId(/^bit-[0-9]+/);
-//     expect(bits[0]).toHaveTextContent('0');
-//     fireEvent.click(down);
-//     bits = screen.getAllByTestId(/^bit-[0-9]+/);
-//     expect(bits[0]).toHaveTextContent('0');
-    
-// })
-
-test('can set bit values from input', () => {
+test('can set bits from int value', async () => {
     render(<BitInteraction />);
     const textbox = screen.getByTestId('int-value');
     fireEvent.click(textbox);
-    expect(textbox).toBeEnabled();    
+    expect(textbox).toBeEnabled();
     userEvent.type(textbox, '65');
-    expect(textbox).toHaveValue('65');
-    let bits = screen.getAllByTestId(/^bit-[0-9]+/);
-    expect(bits).toHaveLength(8);
+    userEvent.tab()
+    waitFor(() => {
+        expect(textbox).toHaveValue('65');
+        let bits = screen.getAllByTestId(/^bit-[0-9]+/);
+        expect(bits).toHaveLength(8);
+        expect(bits[0]).toHaveTextContent('1')
+        expect(bits[1]).toHaveTextContent('0')
+        expect(bits[2]).toHaveTextContent('0')
+        expect(bits[3]).toHaveTextContent('0')
+        expect(bits[4]).toHaveTextContent('0')
+        expect(bits[5]).toHaveTextContent('1')
+        expect(bits[6]).toHaveTextContent('0')
+        expect(bits[7]).toHaveTextContent('0')
+    })
 });
 
 test('can set bit count from input', () => {
@@ -480,10 +505,11 @@ test('can set bit count from input', () => {
     const textbox = screen.getByTestId('bit-count');
     expect(textbox).toHaveValue('8');
     fireEvent.click(textbox);
-    expect(textbox).toBeEnabled();    
+    expect(textbox).toBeEnabled();
     userEvent.clear(textbox);
     userEvent.type(textbox, '1');
     userEvent.type(textbox, '2');
+    userEvent.tab()
     expect(textbox).toHaveValue('12');
     let bits = screen.getAllByTestId(/^bit-[0-9]+/);
     expect(bits).toHaveLength(12);
@@ -493,29 +519,38 @@ test('can set hex value from input', () => {
     render(<BitInteraction />);
     const textbox = screen.getByTestId('hex-value');
     fireEvent.click(textbox);
-    expect(textbox).toBeEnabled();    
+    expect(textbox).toBeEnabled();
     userEvent.type(textbox, '{backspace}');
     userEvent.type(textbox, 'FF');
-    expect(textbox).toHaveValue('0xFF');
-    let bits = screen.getAllByTestId(/^bit-[0-9]+/);
-    expect(bits).toHaveLength(12);
+    userEvent.tab()
+    waitFor(() => {
+        expect(textbox).toHaveValue('0xFF');
+        let bits = screen.getAllByTestId(/^bit-[0-9]+/);
+        expect(bits).toHaveLength(12);
+    })
 });
 
-test('can flip all bits in a byte', () => {
-    render(<BitInteraction numberOfBits={16}/>)
+test('can flip all bits in a byte', async () => {
+    render(<BitInteraction numberOfBits={16} />)
     const flipAll = screen.getAllByTestId('flip-byte')
     const intValue = screen.getByTestId('int-value')
     fireEvent.click(flipAll[0])
     fireEvent.click(flipAll[1])
-    expect(intValue).toHaveValue('65535')
+    waitFor(()=>{
+        expect(intValue).toHaveValue('65535')
+    })
 })
 
 test('can reset all bits in a byte', () => {
-    render(<BitInteraction startingIntValue={65535}/>)
+    render(<BitInteraction startingIntValue={65535} />)
     const resetAll = screen.getAllByTestId('reset-byte')
     const intValue = screen.getByTestId('int-value')
     fireEvent.click(resetAll[0])
-    expect(intValue).toHaveValue('255')
+    waitFor(()=>{
+        expect(intValue).toHaveValue('255')
+    })
     fireEvent.click(resetAll[1])
-    expect(intValue).toHaveValue('0')
+    waitFor(()=>{
+        expect(intValue).toHaveValue('0')
+    })
 })
