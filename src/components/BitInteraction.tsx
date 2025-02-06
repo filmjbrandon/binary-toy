@@ -293,7 +293,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                             onChange={handleBitCountChange} 
                             id="bit-count"
                             data-testid="bit-count"
-                            value={bitCount}
+                            defaultValue={bitCount}
                             title={bitCount.toString()}
                         />
                     </div>
@@ -307,7 +307,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                             readOnly
                             data-testid="hex-value"
                             id="hex-value"
-                            value={hexValue}
+                            defaultValue={hexValue}
                             title={hexValue}
                         />
                     </div>
@@ -346,6 +346,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
                     </div>
                 
                     {
+                    (internalIntValue <= 1114112) &&
                     (internalIntValue <= 1114112) &&
                     <div className="display-item">
                         <label htmlFor="char-value">
