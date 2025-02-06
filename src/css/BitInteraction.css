@@ -6,6 +6,7 @@ div.interaction {
     row-gap: 1em;
     column-gap: 1em;
     padding-top: 1em;
+    font-family: monospace;
 }
 
 div.bits {
@@ -29,65 +30,8 @@ div.bits div.byte {
     flex-direction: row-reverse;
 }
 
-.control {
-    padding: 10px;
-    margin: 0px;   
-    min-width: 400px;
-    width: 40vw;
-    display:flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: center;
-    align-content: flex-start;
-    gap: 1em;
-
-}
-
-.display-item {
-    display: flex;
-    flex-direction: column;
-}
-
-.display {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 1em;
-}
-
 .bit-container {
     display:flex;
     flex-direction:column;
 }
 
-.control input {
-    background-color: rgb(236, 236, 233);
-    font-size: 36px;
-    width:180px;
-}
-
-.control button {
-    appearance: button;
-    -webkit-appearance: button;
-    height: 50px;
-    margin-top: 20px;
-    margin-left: 3px;
-    margin-right: 3px;
-    width: 100px;
-}
-
-label {
-    color: white;
-    width: 100%;
-    margin-bottom: 2px;
-    /* border:1px solid white; */
-}
-
-.inc-dec {
-    float:right;
-    display:flex;
-    flex-direction: column;
-    color:aliceblue;
-}

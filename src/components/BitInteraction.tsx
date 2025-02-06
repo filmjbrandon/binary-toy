@@ -1,296 +1,143 @@
-import { useState } from "react";
-import _, { isEmpty } from 'lodash';
-
+import { useState, useEffect, useRef } from "react";
+import _, {isEqual} from 'lodash';
 import Bit from "./Bit";
 import "../css/BitInteraction.css";
+import BitControls from "./BitControls";
+import ValueControls from "./ValueControls";
+import ByteControls from "./ByteControls";
 
-let counter = 0;
+interface BitInteractionProps {
+    numberOfBits?: number,
+    startingIntValue?: number,
+}
 
-export default function BitInteraction({ numberOfBits = 8 }) {
-    const [bitCount, setBitCount] = useState(numberOfBits);
-    const [intValue, setIntValue] = useState(0);
-    const [hexValue, setHexValue] = useState('0x00');
-    const [bits, setBits] = useState(Array(numberOfBits).fill(0));
-    const [resetState, setResetState] = useState(false);
-    const [chunkedBitArray, setChunkedBitArray] = useState(_.chunk(Array(numberOfBits).fill(0),8));
-    // const [editable, setEditable] = useState({'int-value':false});
-
-    const decrementValue = () => {
-        const i = intValue - 1;
-        // setResetState(true);
-        const newBits = Number(i).toString(2)
-            .split('')
-            .map(bit => {
-                return Number.parseInt(bit);
-            }).toReversed();
-        resetBits(newBits); // this will set the bits for us
+const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, startingIntValue = 0 }) => {
+    const MAXBITS = 64
+    const [bitCount, setBitCount] = useState(numberOfBits)
+    const [intValue, setIntValue] = useState(startingIntValue)
+    const [internalIntValue, setInternalIntValue] = useState(intValue)
+    
+    const chunkBitArray = (bits: string[]) => _.chunk(bits,8)
+    
+    const calculateChunkedBitArray = (value: number, useBitCount: number = bitCount): string[][] => {
+        const binaryString = value.toString(2);
+        const paddedBinaryString = binaryString.padStart(
+            Math.ceil(binaryString.length / useBitCount) * useBitCount,
+            "0"
+        );
+        return chunkBitArray(paddedBinaryString.split("").toReversed());
     }
 
-    const incrementValue = () => {
-        const i = intValue + 1;
-        console.log("adding 1 to intValue: %d", intValue);
-        const newBits = Number(i).toString(2)
-            .split('')
-            .map(bit => {
-                return Number.parseInt(bit);
-            }).toReversed();
-        resetBits(newBits) // this will set the bits for us
-    }
-        
+    const [chunkedBitArray, setChunkedBitArray] = useState(calculateChunkedBitArray(startingIntValue, numberOfBits))
 
-    const addBit = () => {
-        setResetState(false);
-        setBitCount(bitCount + 1);
-        const newBits = [...bits, 0]
-        // setBits(newBits);
-        refreshDisplay(newBits);
-    };
-
-    const addByte = () => {
-        setResetState(false);
-        const bitsRemaining = 8 - ( bitCount % 8 );
-        setBitCount(bitCount+bitsRemaining);
-        const newBits = [...bits].concat(Array(bitsRemaining).fill(0));
-        refreshDisplay(newBits);
-    }
-
-    const removeByte = () => {
-        setResetState(false);
-        const bitsRemaining = ( bitCount % 8 ) || 8;
-        setBitCount(bitCount-bitsRemaining);
-        const newBits = [...bits].toSpliced(Math.ceil(bitCount / 8),bitsRemaining);
-        refreshDisplay(newBits);
-    }
-
-    const removeBit = () => {
-        if (bitCount > 1) {
-            const newBitCount = bitCount - 1;
-            setBitCount(newBitCount);
-            const updatedBits = [...bits].slice(0, newBitCount);
-            refreshDisplay(updatedBits);
-        }
-    };
-
-    const refreshDisplay = (arrayOfBits: Array<number>) => {
-        setResetState(true);
-
-        if (isEmpty(arrayOfBits)) {
-            arrayOfBits = Array(bitCount).fill(0);
-            console.log('resetting');
-        } else {
-            console.log('rebuilding');
-        }
-        setBits(arrayOfBits);
-        // break bits into bytes 
-        setChunkedBitArray( _.chunk(arrayOfBits, 8) );
-        console.log("arrayOfBits", arrayOfBits);
-        // we reverse the bit order before we write it to a string
-        const iVal = parseInt(arrayOfBits.toReversed().join(""), 2);
-        console.log("iVal", iVal);
-        setIntValue(iVal);
-        const numBytes = Math.ceil(arrayOfBits.length / 8);
-        setHexValue('0x' + iVal.toString(16).padStart(2*numBytes, '0').toUpperCase());
-        if (! arrayOfBits.every((v)=>v===0) )
-            setResetState(false);
-
-    }
-
-    const handleBitChange = (index: number, value: number) => {
-        setResetState(false);
-        console.log("Setting bit-%d to %d:", index, value);
-        const updatedBits = bits.map((bit, idx) => {
-            if (idx === index) {
-                bit = value;
-                return bit;
+    // Update chunked bit array when intValue changes
+    useEffect(() => {
+        setChunkedBitArray((prevChunkedBitArray) => {
+            const newChunkedBitArray = calculateChunkedBitArray(intValue)
+            console.log(`new: ${newChunkedBitArray}, prev:${prevChunkedBitArray}`)
+            if (_.isEqual(prevChunkedBitArray,newChunkedBitArray)) {
+                return prevChunkedBitArray
+            } else {
+                setBitCount((prevBitCount) => {
+                    const newBitCount = newChunkedBitArray.flat().length
+                    return newBitCount === prevBitCount ? prevBitCount : newBitCount
+                })
+                return newChunkedBitArray
             }
-            return bit;
+        })
+        setInternalIntValue(intValue)
+    }, [intValue, bitCount])
+
+
+    // // Update intValue and bitCount when chunkedBitArray changes
+    useEffect(() => {
+        console.log('modifying chunked bit array...')
+        setBitCount((prevBitCount) => {
+            const newBitCount = chunkedBitArray.flat().length
+            return newBitCount === prevBitCount ? prevBitCount : newBitCount
+        })
+
+        setIntValue((prevIntValue) => {
+            console.log(`chunkedBitArray = ${chunkedBitArray}, prevIntValue = ${prevIntValue}, ${bitCount}`)
+            const updatedBits = chunkedBitArray.flat()
+            console.log(`updatedBits = ${updatedBits}, ${bitCount}`)
+            const newIntValue = parseInt([...updatedBits].toReversed().join(""), 2)
+        
+            // Avoid redundant updates by checking if intValue actually changes
+            if (newIntValue !== prevIntValue) {
+                console.log(`chunkedBitArray changed, updating intValue to ${newIntValue}`);
+                return newIntValue;
+            }
+            return prevIntValue; // No changes, keep the same
         });
-        resetBits(updatedBits);
-        refreshDisplay(updatedBits);
+    }, [chunkedBitArray]);
+
+    console.log(`bits as binary string = ${chunkedBitArray.flat().toReversed().join("")}`)
+
+    const handleBitChange = (index: number) => {
+        const updatedBits = [...chunkedBitArray.flat()]
+        updatedBits[index] = (1 ^ Number(updatedBits[index])).toString(); // shifts bit between '0' or '1'
+        setChunkedBitArray(_.chunk(updatedBits, 8))
+    }
+
+    const onChangeBits = (newFlatArray: string[]) => {
+        setChunkedBitArray(chunkBitArray([...newFlatArray]))
     };
 
-    const handleIntChange = () => {
-        console.log("setting bits to", intValue, intValue.toString(2).split(''))
-        setBits(intValue.toString(2).split(''));
+    const onChangeIntValue = (intValue: number) => {
+        setIntValue(intValue)
+    };
+
+    const updateByte = (chunkIndex: number, bits: string[]):void => {
+        console.log(chunkIndex, bits)
+        setChunkedBitArray((prevChunkedBitArray) => {
+            if (prevChunkedBitArray[chunkIndex] === bits)
+                return prevChunkedBitArray
+
+            const updatedChunkedBitArray = prevChunkedBitArray.map((chunk, index) => { 
+                console.log(index, chunk, bits)
+                if (index === chunkIndex)
+                    return bits
+                return chunk 
+            })
+            return updatedChunkedBitArray
+        })
     }
-
-    const resetBits = (newState:Array<number>) => {
-        // if (isEmpty(newState))
-        //     setResetState(true);
-        // else if (! resetState )
-        //     setResetState(true);
-
-        refreshDisplay(newState);
-
-    }
-
-    const makeHexColor = (num:number) => {
-        return "#"+
-            Number(num).toString(16)
-            .padStart(6, '0')
-            .slice(-6)
-            .toUpperCase();
-    }
-
-    // Print and increase the value
-    console.log('Screen is refreshed ', ++counter, ' times')
-
-
 
     return (
         <div data-testid="bit-interaction" className="interaction">
             <div data-testid="bits" className="bits">
-
-                {chunkedBitArray.map((chunk, k) => (
+                {chunkedBitArray.map((chunk, chunkIndex) => (
                     <div
-                        key={"byte-" + k}
+                        key={"byte-" + chunkIndex}
                         className="byte"
                         data-testid="byte"
-                        id={"byte-" + k}>
-                        {chunk.map((v, i) => (
+                        id={"byte-" + chunkIndex}>
+                        <ByteControls key={`byte-controls-${chunkIndex}`} byteNumber={chunkIndex} bits={chunk} onByteChange={updateByte} />
+                        {chunk.map((bitVal, bitIndex) => (
                             <Bit
-                                key={i + (k * 8)}
-                                index={i + (k * 8)}
-                                setValue={v}
-                                onChange={handleBitChange}
-                                isReset={resetState}
+                                key={`${chunkIndex}-${bitIndex}`}
+                                index={bitIndex + (chunkIndex * 8)}
+                                defaultValue={Number(bitVal)}
+                                onToggleBit={handleBitChange}
                             />
                         ))}
                     </div>
                 ))}
             </div>
 
-            <div className="control" id="controls">
-                <label htmlFor="controls">Controls</label>
+            <BitControls
+                onChangeBits={onChangeBits}
+                currentBitArray={chunkedBitArray.flat()}
+                key={`bit-control-${chunkedBitArray.flat().join('')}`}
+            />
 
-                <div className="buttons">
-
-                    <button
-                        data-testid="add-bit"
-                        onClick={addBit}>
-                        Add Bit
-                    </button>
-                    <button
-                        disabled={bitCount < 2}
-                        data-testid="remove-bit"
-                        onClick={removeBit}>
-                        Remove Bit
-                    </button>
-                    <button data-testid="reset"
-                        onClick={(e) => resetBits([]) }>
-                        Reset Bits
-                    </button>
-                    <button
-                        data-testid="add-byte"
-                        onClick={addByte}>
-                        Add Byte
-                    </button>
-                    <button
-                        data-testid="remove-byte"
-                        onClick={removeByte}>
-                        Remove Byte
-                    </button>
-
-                </div>
-
-                <div className="display" id="controls-display">
-                    <label htmlFor="controls-display">Display</label>
-
-                    <div className="display-item">
-                        <label htmlFor="bit-count">
-                            # of Bits
-                        </label>
-                        <input type="text"
-                            disabled={true}
-                            id="bit-count"
-                            data-testid="bit-count"
-                            value={bitCount}
-                            title={bitCount.toString()}
-                        />
-                    </div>
-
-                    <div className="display-item">
-                        <label htmlFor="hex-value">
-                            HexVal
-                        </label>
-                        <input type="text"
-                            disabled={true}
-                            data-testid="hex-value"
-                            id="hex-value"
-                            value={hexValue}
-                            title={hexValue}
-                        />
-                    </div>
-
-                    <div className="display-item">
-                        <label htmlFor="int-value">
-                            IntVal
-                        </label>
-                        <input type="text"                            
-                            id="int-value"
-                            data-testid="int-value"
-                            value={intValue.toString()}
-                            title={intValue.toString()}
-                            // onClick={ (e) => setEditable({'int-value':true}) }
-                        />
-                        {/* <button 
-                            style={{ visibility: editable['int-value'] ? 'visible' : 'hidden' }} 
-                            onClick={ (e) => console.log(e.target) }
-                        >
-                            Save Changes
-                        </button> */}
-                        <div className="inc-dec">
-                            <span
-                                data-testid="inc-value"
-                                onClick={(e)=>incrementValue()} 
-                                className="inc">{String.fromCodePoint(0x25b2)}</span>
-                            <span 
-                                data-testid="dec-value"
-                                onClick={(e)=>decrementValue()} 
-                                className="dec">{String.fromCodePoint(0x25bc)}</span>
-                        </div>
- 
-                    </div>
-                
-                    {
-                    (intValue <= 1114112) &&
-                    <div className="display-item">
-                        <label htmlFor="char-value">
-                            Character
-                        </label>
-                        <input type="text"
-                            disabled={true}
-                            id="char-value"
-                            data-testid="char-value"
-                            value={String.fromCodePoint(intValue)}
-                            title={String.fromCodePoint(intValue)}
-                        />
-                    </div>
-                    }
-
-                    {
-                    // intValue <= 16777215 && 
-                    <div className="display-item">
-                        <label htmlFor="color-value">
-                            Color
-                        </label>
-                        <input type="text"
-                            disabled={true}
-                            id="color-value"
-                            data-testid="color-value"
-                            value={makeHexColor(intValue)}
-                            title={makeHexColor(intValue)}
-                            style = {{ 
-                                backgroundColor: (intValue <= 16777215) ? 
-                                makeHexColor(intValue) :
-                                    'inherit'
-                            }}
-                        />
-                    </div>
-                    }
-                </div>
-
-            </div>
+            <ValueControls
+                currentIntValue={internalIntValue}
+                onChangeIntValue={onChangeIntValue}
+                key={`value-controls-${internalIntValue}`}
+            />
         </div>
     );
 }
+export default BitInteraction
