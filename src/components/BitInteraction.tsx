@@ -106,37 +106,62 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
 
     return (
         <div data-testid="bit-interaction" className="interaction">
-            <div data-testid="bits" className="bits">
-                {chunkedBitArray.map((chunk, chunkIndex) => (
-                    <div
-                        key={"byte-" + chunkIndex}
-                        className="byte"
-                        data-testid="byte"
-                        id={"byte-" + chunkIndex}>
-                        <ByteControls key={`byte-controls-${chunkIndex}`} byteNumber={chunkIndex} bits={chunk} onByteChange={updateByte} />
-                        {chunk.map((bitVal, bitIndex) => (
-                            <Bit
-                                key={`${chunkIndex}-${bitIndex}`}
-                                index={bitIndex + (chunkIndex * 8)}
-                                defaultValue={Number(bitVal)}
-                                onToggleBit={handleBitChange}
-                            />
+            <div className="header">
+                <h1>Binary Toy</h1>
+                <p>An interactive tool for exploring binary numbers for education and fun</p>
+            </div>
+            <div className="container">
+                <nav className="sidebar">
+                    <BitControls
+                        onChangeBits={onChangeBits}
+                        currentBitArray={chunkedBitArray.flat()}
+                        key={`bit-control-${chunkedBitArray.flat().join('')}`}
+                    />
+                </nav>
+                <div className="main-content">
+                    <ValueControls
+                        currentIntValue={internalIntValue}
+                        onChangeIntValue={onChangeIntValue}
+                        key={`value-controls-${internalIntValue}`}
+                    />
+                    <div data-testid="bits" className="bit-container">
+                        {chunkedBitArray.map((chunk, chunkIndex) => (
+                            <div
+                                key={"byte-" + chunkIndex}
+                                className="byte"
+                                data-testid="byte"
+                                id={"byte-" + chunkIndex}
+                            >
+                                <ByteControls 
+                                    key={`byte-controls-${chunkIndex}-start`} 
+                                    byteNumber={chunkIndex} 
+                                    bits={chunk} 
+                                    onByteChange={updateByte} 
+                                    position="start"
+                                />                        
+                                {chunk.map((bitVal, bitIndex) => (
+                                    <>
+                                        {bitIndex === 4 && <span className="spacer"></span>}
+                                        <Bit
+                                            key={`${chunkIndex}-${bitIndex}`}
+                                            index={bitIndex + (chunkIndex * 8)}
+                                            defaultValue={Number(bitVal)}
+                                            onToggleBit={handleBitChange}
+                                        />
+                                    </>
+                                ))}
+                                <ByteControls 
+                                    key={`byte-controls-${chunkIndex}-end`} 
+                                    byteNumber={chunkIndex} 
+                                    bits={chunk} 
+                                    onByteChange={updateByte} 
+                                    position="end"
+                                />
+                            </div>
                         ))}
                     </div>
-                ))}
+                </div>
             </div>
-
-            <BitControls
-                onChangeBits={onChangeBits}
-                currentBitArray={chunkedBitArray.flat()}
-                key={`bit-control-${chunkedBitArray.flat().join('')}`}
-            />
-
-            <ValueControls
-                currentIntValue={internalIntValue}
-                onChangeIntValue={onChangeIntValue}
-                key={`value-controls-${internalIntValue}`}
-            />
         </div>
     );
 }

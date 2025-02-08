@@ -1,37 +1,308 @@
-div.interaction {
-    display : flex;
-    flex-flow: row-reverse;
-    justify-content: center;
-    flex-wrap: wrap-reverse;
-    row-gap: 1em;
-    column-gap: 1em;
-    padding-top: 1em;
-    font-family: monospace;
+body, h1, p {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
 }
 
-div.bits {
+.container {
+    display : flex;
+    flex-flow: row;
+    height: 100%;
+    width: 100%;
+    max-width: 100%;
+}
+
+
+.header {
+    margin-bottom: 0;
+    padding: 1rem;
+    font-size: clamp(calc(1rem * 0.875), 2vw, 2rem);
+    font-weight: bold;
+    font-family: monospace;
+    background-color: whitesmoke;
+    max-width: 100%;
+    width: 100%;
+}
+
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: gray;
+    align-items: center;
+    margin: 0;
+    padding: 8px;
+    height: max-content;
+    position: sticky;
+    max-height: 100%;
+}
+
+.sidebar .control {
+    gap: 0.25rem;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2rem;
+    align-items: center;
+}
+
+.control-item, .value-control-item {
+    width: 75%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    gap: 2px;
+}
+
+/* Style the value controls (bottom row) */
+#value-controls {
+    display: flex;
+    position: sticky;
+    margin: 0;
+    padding: 0;
+    flex-direction: row;
+    gap: 0.5rem;
+    color: white;
+    background-color: #222;
+    height: 4.5rem;
+}
+
+.control-item label {
+    display: flex;
+    flex-direction: row;
+    justify-content:space-evenly;
+    padding-bottom: 5px;
+    display: flex;
+}
+
+input {
+    padding: 0px 22px 0px 5px;
+    height: 2rem;
+}
+
+button {
+    background: #333;
+    cursor: pointer;
+    max-width: clamp(50px, 100vw, 100px);
+    height: clamp(10px, 100vh, 50px);
+    display: flex;
+    align-items: center;
+    justify-content:space-evenly;
+    padding: 0;
+    border-radius: 1rem;
+    white-space: nowrap;
+    position: relative;
+}
+
+button::after {
+    content: attr(aria-label);
+    position: absolute;
+    left: 0;
+    transform: translateX(25%);
+    padding: 4px 8px;
+    background: #333;
+    color: white;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    width: 150px;          /* Fixed width */
+    min-width: min-content;
+    text-align: center;    /* Center the text */
+    word-wrap: break-word; /* Break long words if needed */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+button:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+button:hover {
+    background: #666;
+}
+
+
+.sidebar button {
+    width: 100%;
+}
+
+button:active {
+    background: #888;
+}
+
+button:disabled {
+    background: #222;
+    color: #666;
+}
+
+.sidebar input {
+    width: 95%;
+    height: 2rem;
+}
+
+
+.value-control-item>div {
+    position: relative;
+}
+
+.value-control-item .inc-dec {
+    -webkit-user-select: none; /* Safari */
+    display: inline-block;
+    cursor: pointer;
+    user-select: none;
+    position: absolute;
+    right: 5px;
+    top: 0px;
+    font-size: 1rem;
+    color: black;
+}
+
+
+.sidebar label {
+    -webkit-user-select: none; /* Safari */
+    font-size: clamp(0.5rem, calc(100vw - var(--sidebar-width)), 1rem);
+    user-select: none;
+}
+
+/* MAIN CONTENT */
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.inputs input {
+    padding: 10px;
+    font-size: 1rem;
+    background: #333;
+    border: 1px solid white;
+    text-align: center;
+}
+
+/* BIT GRID */
+.bit-container {
+    display: flex;
+    flex-direction: column;
+    align-items:end;
+    align-self: center;
+    gap: 5px;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    flex-grow: 1;
+}
+
+/* BIT ROW */
+.byte {
+    margin: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: center;
+    align-self: center;
+    gap: 5px;
+    justify-content: center;
+}
+
+/* BITS */
+/* .bit {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: 2px solid white;
+    background: black;
+    color: white;
+} */
+
+/* KABOB MENU */
+.kabob-menu {
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 5px;
+}
+
+/* 📱 MOBILE: Sidebar Becomes Top Navbar */
+@media (max-width: 500px) {
+
+    .header {
+        margin-bottom: 0;
+        
+    }
+    .container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        max-width: 100%;    
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        font-size: 1rem;
+        height: 4.5rem;
+    }
+
+    .sidebar .control {
+        margin-bottom: 0.5rem;
+    }
+
+    .sidebar label {
+        font-size: 0.875rem;
+        height: 1rem;
+        text-align: right;
+    }
+
+    .value-control-item input {
+        width: max(65px, calc(var(--sidebar-width) / 1.1))
+    }    
+
+    /* Style the bit controls (top row) */
+    #bit-controls {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        width:100%;
+        align-items: center;
+        align-content: center;
+        font-size: 1rem;
+    }
+
+    #bit-controls .control-item {
+        max-width: 65px;
+    }
+
+    #bit-controls input {
+        height: 2rem;
+        width: 1.5rem;
+        font-size: 1.2rem;
+    }
+
+    /* .main-content {
+         max-width: 100%;
+         width: 100%;
+    } */
+}
+
+/* div.bits {
     display: flex;
     flex-direction: column; 
     padding: 0px;
-    margin: 0px;   
-    max-width: 55vw;
-    min-width:300px;
-
+    margin: 0px;
 }
 
 div.bits div.byte {
-    /* flex-direction: column; */
+    flex-direction: column;
     display : flex;
     margin-right: auto;
     justify-content: right;
-    /* column-gap: 4px; */
-    /* width: 100vw; */
-    /* margin: 10px; */
     flex-direction: row-reverse;
 }
 
 .bit-container {
     display:flex;
     flex-direction:column;
-}
+} */
 

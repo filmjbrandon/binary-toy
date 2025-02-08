@@ -1,0 +1,12 @@
+.byte-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.byte-controls button {
+    padding: 5px;
+    margin: 0;
+    height: 25%;
+    font-size: 0.75rem;
+}

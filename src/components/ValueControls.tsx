@@ -114,13 +114,13 @@ const ValueControls: React.FC<ValueControlsProps> = ({
 
     const valueControlsList = [
         {
-            label: "Hex Value",
+            label: "Hex",
             testId: "hex-value",
             handler: handleHexChange,
             value: hexValue,
         },
         {
-            label: "Integer Value",
+            label: "Integer",
             testId: "int-value",
             handler: handleIntChange,
             value: intValue,
@@ -152,30 +152,31 @@ const ValueControls: React.FC<ValueControlsProps> = ({
                     <label htmlFor={`value-control-${index}`}>
                         {control.label}
                     </label>
-                    <div className="inc-dec">
-                        <span
-                            hidden={intValue >= Math.pow(2, MAXBITS)}
-                            data-testid="inc-value"
-                            onClick={incrementValue}
-                            className="inc">{String.fromCodePoint(0x25b2)}</span>
-                        <span
-                            hidden={intValue === 0}
-                            data-testid="dec-value"
-                            onClick={decrementValue}
-                            className="dec">{String.fromCodePoint(0x25bc)}</span>
+                    <div>
+                        <input
+                            id={`value-control-${control.testId}-${index}`}
+                            key={`value-control-${control.testId}-${index}`}
+                            ref={inputRef}
+                            data-testid={control.testId}
+                            name={control.testId}
+                            onBlur={control.handler}
+                            defaultValue={control.value.toString()}
+                            onKeyDown={handleKeyDown}
+                            title={control.value.toString()}
+                        />
+                        <div className="inc-dec">
+                            <div
+                                hidden={intValue >= Math.pow(2, MAXBITS)}
+                                data-testid="inc-value"
+                                onClick={incrementValue}
+                                className="inc">{String.fromCodePoint(0x25b2)}</div>
+                            <div
+                                hidden={intValue === 0}
+                                data-testid="dec-value"
+                                onClick={decrementValue}
+                                className="dec">{String.fromCodePoint(0x25bc)}</div>
+                        </div>
                     </div>
-                    <input
-                        id={`value-control-${control.testId}-${index}`}
-                        key={`value-control-${control.testId}-${index}`}
-                        ref={inputRef}
-                        data-testid={control.testId}
-                        name={control.testId}
-                        onBlur={control.handler}
-                        defaultValue={control.value.toString()}
-                        onKeyDown={handleKeyDown}
-                        title={control.value.toString()}
-                    />
-                    
                 </div>
             ))}
 

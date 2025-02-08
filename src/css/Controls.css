@@ -1,8 +1,7 @@
-.control {
+/* .control {
     padding: 10px;
     margin: 0px;   
     min-width: 400px;
-    width: 40vw;
     display:flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -10,49 +9,35 @@
     justify-content: center;
     align-content: flex-start;
     gap: 1em;
-
-}
-
-.value-control-item {
-    display: flex;
-    flex-direction: column;
-}
-
-.value-controls {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 1em;
 }
 
 .control input {
     background-color: rgb(236, 236, 233);
-    font-size: 36px;
-    width:180px;
+    font-size: 2rem;
+    display: flex;
+    flex-flow: column;
 }
 
 .control button {
-    appearance: button;
     -webkit-appearance: button;
+    appearance: button;
     height: 50px;
-    margin-top: 20px;
-    margin-left: 3px;
-    margin-right: 3px;
     width: 100px;
 }
 
-label {
+.control label {
     color: white;
-    width: 100%;
     margin-bottom: 2px;
-    /* border:1px solid white; */
+    font-size: clamp(0.5rem, 90%, 5rem);
+    display: flex;
+    flex-flow: column;
+    /* border:1px solid white;
 }
 
-.inc-dec {
+/* .inc-dec {
     float:right;
     display:flex;
     flex-direction: column;
     color:aliceblue;
-}
+} */
 

@@ -1,14 +1,21 @@
 .bit {
-    appearance: none;
     background-color: black;
-    border: 1px solid #999;
-    float: left;
+    border: 1px solid whitesmoke;
     font-weight: bold;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: max(0.1vh, 1vw);
+    padding-right: max(0.1vh, 1vw);
     text-align: center;
-    margin-top: auto;
-    margin-bottom: auto;
+    cursor:pointer;
     color: white;
-    font-size: 5dvw;
+    font-size: clamp(2.5rem, calc((100vw - var(--sidebar-width) - 20px) / 12), 9rem);
+}
+
+span.spacer {
+    width: max(0.1vh, 1vw);
+}
+
+@media (max-width: 768px) {
+    /* 🔢 Bits Stack Properly */
+    .bit {
+    }
 }

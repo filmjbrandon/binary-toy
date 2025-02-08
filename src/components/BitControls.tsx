@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import _, {isEqual, repeat, size} from 'lodash'
 import "../css/Controls.css";
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPlus, faMinus, faRotateLeft } from '@fortawesome/free-solid-svg-icons'
 
 interface BitControlsProperties {
     currentBitArray: string[],
@@ -118,56 +119,7 @@ const BitControls: React.FC<BitControlsProperties> = ({currentBitArray, onChange
             onChangeBits(newArray)
             return newArray
         })
-
-        // setChunkedBitArray(chunkBitArray(flattenedBitArray))
     }
-
-    // const flipByte = (event: React.MouseEvent<HTMLButtonElement>): void => {
-    //     const chunkIndex = Number(event.currentTarget.id.substring(10)); // Convert input to number
-
-    //     setChunkedBitArray((prevChunkedBitArray) => {
-    //         return prevChunkedBitArray.map((chunk, index) => {
-    //             // If this is the target chunk, toggle all its bits
-    //             if (index === chunkIndex) {
-    //                 return chunk.map((bit) => (bit === '0' ? '1' : '0'));
-    //             }
-    //             // Otherwise, return the chunk as is
-    //             return chunk;
-    //         });
-    //     });
-    // }
-
-    // const resetByte = (event: React.MouseEvent<HTMLButtonElement>): void => {
-    //     const chunkIndex = Number(event.currentTarget.id.substring(11)); // Convert input to number
-
-
-    //     setChunkedBitArray((prevChunkedBitArray) => {
-    //         return prevChunkedBitArray.map((chunk, index) => {
-    //             // If this is the target chunk, toggle all its bits
-    //             if (index === chunkIndex) {
-    //                 return chunk.map( (bit) => '0' );
-    //             }
-    //             // Otherwise, return the chunk as is
-    //             return chunk;
-    //         });
-    //     });
-    // }
-
-    // const shiftByte = (event: React.MouseEvent<HTMLButtonElement>): void => {
-        
-    //     const chunkIndex = Number(event.currentTarget.id.substring(11)); // Convert input to number
-    // //       (chunkIndex: number, direction: 'left' | 'right', steps: number = 1) => {
-
-    //         setChunkedBitArray((prevChunkedBitArray) => {
-    //         return prevChunkedBitArray.map((chunk, index) => {
-    //             if (index === chunkIndex) {
-    //                 return shiftBitsByChunk(chunk, 'left', 1);
-    //             }
-    //             return chunk;
-    //         });
-    //     });
-    // };
-
 
     const resetBits = () => {
         const resetArray = Array(bitCount).fill('0')
@@ -180,26 +132,41 @@ const BitControls: React.FC<BitControlsProperties> = ({currentBitArray, onChange
             label: "Add Bit",
             testId: "add-bit",
             handler: addBit,
+            icon: <FontAwesomeIcon icon={faPlus} size="2xl" color="mediumseagreen" />,
+            disabled: () => bitCount >= MAXBITS,
+            category: 'Bits',
         },
         {
             label: "Remove Bit",
             testId: "remove-bit",
             handler: removeBit,
+            icon: <FontAwesomeIcon icon={faMinus} size="2xl" color="mediumseagreen" />,
+            disabled: () => bitCount <= 1,
+            category: 'Bits',
         },
         {
             label: "Reset Bits",
             testId: "reset-bits",
             handler: resetBits,
+            icon: <FontAwesomeIcon icon={faRotateLeft} size="2xl" color="mediumseagreen" />,
+            disabled: () => false,
+            category: 'Reset',
         },
         {
             label: "Add Byte",
             testId: "add-byte",
             handler: addByte,
+            icon: <FontAwesomeIcon icon={faPlus} size="2xl" color="mediumseagreen" />,
+            disabled: () => bitCount >= MAXBITS,
+            category: 'Bytes',
         },
         {
             label: "Remove Byte",
             testId: "remove-byte",
             handler: removeByte,
+            icon: <FontAwesomeIcon icon={faMinus} size="2xl" color="mediumseagreen" />,
+            disabled: () => bitCount <= 8,
+            category: 'Bytes',
         }
     ]
 
@@ -210,7 +177,24 @@ const BitControls: React.FC<BitControlsProperties> = ({currentBitArray, onChange
             id="bit-controls"
             data-testid="bit-controls"
         >
-            <label htmlFor="bit-controls">Controls</label>
+            {bitControlsList.map((control, index) => (
+                <div className="control-item">
+                    <label htmlFor={`bit-control-${control.testId}-${index}`}>
+                    {index-1 > -1 && bitControlsList[index-1].category === control.category
+                        ? ''
+                        : control.category
+                    }
+                    </label>
+                    <button
+                        key={`bit-control-${control.testId}-${index}`}
+                        data-testid={control.testId}
+                        aria-label={control.label}
+                        disabled={control.disabled()}
+                        onClick={control.handler}>
+                        {control.icon}
+                    </button>
+                </div>
+            ))}
             <div className="control-item">
                 <label htmlFor="bit-count">
                     Bit Count
@@ -225,17 +209,6 @@ const BitControls: React.FC<BitControlsProperties> = ({currentBitArray, onChange
                 />
 
             </div>
-            {bitControlsList.map((control, index) => (
-                <div className="control-item">
-                    <button
-                        key={`bit-control-${control.testId}-${index}`}
-                        data-testid={control.testId}
-                        onClick={control.handler}>
-                        {control.label}
-                    </button>
-                </div>
-            ))}
-            
         </div>
     )
 }
