@@ -14,6 +14,7 @@ export default defineConfig({
     coverage: {
       reporter: ['lcov', 'text'],
     },
+    css: true, // processes CSS files which by default it will not
     outputFile: 'test/coverage/sonar-report.xml',
   },
 })
