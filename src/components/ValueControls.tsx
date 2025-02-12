@@ -101,7 +101,9 @@ const ValueControls: React.FC<ValueControlsProps> = ({
             color: 'inherit',
         }
         if (num <= 16777215) {
-            styles.backgroundColor = makeHexColor(num)
+            const color = makeHexColor(num)
+            styles.backgroundColor = color
+            styles.color = getTextColor(color)
         }
         return styles
     }

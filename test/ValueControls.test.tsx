@@ -83,11 +83,11 @@ test('can display colors with 3 bytes', () => {
 test('displays text colors according to luminosity of background color', () => {
     render(<ValueControls currentIntValue={255}/>); // Full Blue
     const blueText = screen.getByTestId('color-value')
-    expect(blueText).toHaveStyle('color: white');
+    expect(blueText).toHaveStyle('color: rgb(255, 255, 255)');
     cleanup()
     render(<ValueControls currentIntValue={16777215}/>); // Full White
     const whiteText = screen.getByTestId('color-value')
-    expect(whiteText).toHaveStyle('color: black');
+    expect(whiteText).toHaveStyle('color: rgb(0, 0, 0)');
 })
 
 test('hovering over a textbox will reveal full text', () => {
