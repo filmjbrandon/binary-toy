@@ -84,7 +84,7 @@ test('can reset bits', ()=>{
     expect(mockHandler).toReturnWith(['0','0','0','0','0'])
 })
 
-test('changing bitCount calls onChangeBitCount handler', async ()=>{
+test('can add to bit count', async ()=>{
     render(<BitControls currentBitArray={['0','1']} onChangeBits={mockHandler}/>)
     const textbox = screen.getByTestId('bit-count');
     expect(textbox).toHaveValue('2')
@@ -98,6 +98,57 @@ test('changing bitCount calls onChangeBitCount handler', async ()=>{
         expect(mockHandler).toBeCalledWith(['0','0','0','0'])
     })
 })
+
+test('clicking into bit-count field, select all content', async() => {
+    render(<BitControls currentBitArray={['0','1']} onChangeBits={mockHandler} />)
+    const bitCount = screen.getByTestId('bit-count');
+    expect(bitCount).toHaveValue('2')
+    fireEvent.click(bitCount)
+})
+
+
+test('bit number changes when adding and typing enter', async() => {
+    render(<BitControls currentBitArray={['0','1']} onChangeBits={mockHandler} />)
+    const bitCount = screen.getByTestId('bit-count');
+    expect(bitCount).toHaveValue('2')
+    fireEvent.click(bitCount)
+    userEvent.type(bitCount, '4')
+    userEvent.type(bitCount, '{enter}')
+    expect(mockHandler).toHaveBeenCalled()
+    waitFor(()=>{
+        expect(mockHandler).toBeCalledWith(['0','1','0','0'])
+    })
+})
+
+test('can reduce bit count', async() => {
+    render(<BitControls currentBitArray={['0','1','0','1']} onChangeBits={mockHandler} />)
+    const bitCount = screen.getByTestId('bit-count');
+    expect(bitCount).toHaveValue('4')
+    fireEvent.click(bitCount)
+    userEvent.type(bitCount, '2')
+    userEvent.type(bitCount, '{enter}')
+    expect(mockHandler).toHaveBeenCalled()
+    waitFor(()=>{
+        expect(mockHandler).toBeCalledWith(['0','1'])
+    })
+})
+
+test('can reduce bit count to any number', async() => {
+    render(<BitControls currentBitArray={['0','1','0','1']} onChangeBits={mockHandler} />)
+    const bitCount = screen.getByTestId('bit-count');
+    expect(bitCount).toHaveValue('4')
+    fireEvent.click(bitCount)
+    userEvent.type(bitCount, '3')
+    userEvent.tab()
+    expect(mockHandler).toHaveBeenCalled()
+    waitFor(()=>{
+        expect(mockHandler).toHaveBeenCalledExactlyOnceWith(['0','1','0'])
+        expect(bitCount).toHaveValue('3')
+    })
+})
+
+
+
 
 
 

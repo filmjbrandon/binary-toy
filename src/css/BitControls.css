@@ -1,0 +1,61 @@
+#bit-controls input {
+    width: 4rem;
+    font-size: var(--autoscaled-font-size);
+}
+
+#bit-controls label {
+    font-size: var(--autoscaled-font-size);
+}
+
+.sidebar input {
+    width: 95%;
+    height: 2rem;
+}
+
+
+
+@media (min-width: 500px) {
+    #bit-controls .control-item button::hover::after {
+        content: attr(aria-label);
+        position: absolute;
+        left: 0;
+        transform: translateX(25%);
+        padding: 4px 8px;
+        background: #333;
+        color: white;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        width: 150px;          /* Fixed width */
+        min-width: min-content;
+        text-align: center;    /* Center the text */
+        word-wrap: break-word; /* Break long words if needed */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s;
+        pointer-events: none;
+        z-index: 1000;
+    }
+}
+
+
+@media (max-width: 500px) {
+    #bit-controls {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        align-content: center;
+        font-size: 1rem;
+        padding: 0.5rem;
+    }
+
+    #bit-controls input {
+        width: 2rem;
+    }
+
+    #bit-controls .control-item {
+        gap: 0.5rem;
+        display: flex;
+        flex-direction: column;
+    }
+}

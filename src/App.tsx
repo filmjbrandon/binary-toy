@@ -3,7 +3,7 @@ import BitInteraction from './components/BitInteraction';
 function App() {
   return (
     <div className="App">
-      <BitInteraction />
+      <BitInteraction startingIntValue={256} numberOfBits={9}/>
     </div>
   );
 }

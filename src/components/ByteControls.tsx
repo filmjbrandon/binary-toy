@@ -1,97 +1,127 @@
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import _, {isEqual} from 'lodash'
 import "../css/ByteControls.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faRotateLeft, faRotateRight, faArrowsRotate, faAngleDoubleRight, faAngleDoubleLeft } from '@fortawesome/free-solid-svg-icons'
+import { faRotateLeft, faRotateRight, faArrowsRotate, faAngleDoubleRight, faAngleDoubleLeft, faEllipsisVertical } from '@fortawesome/free-solid-svg-icons'
 
 interface ByteControlProperties {
-    byteNumber?: number,
+    byteNumber?: number, // defaults to 0
     bits: string[],
-    position?: 'start' | 'end',
     onByteChange: (byteNumber: number, bits: string[]) => void,
+    config?: {
+        overflow?:true|false // defaults to true
+    }
 }
 
-const ByteControls: React.FC<ByteControlProperties> = ({bits, byteNumber = 0, onByteChange, position = 'start'}) => {
+const ByteControls: React.FC<ByteControlProperties> = ({bits, byteNumber = 0, onByteChange, config={overflow:true}}) => {
 
-    const flipBits = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    console.debug("Loading ByteControls")
+    const [showControls, setShowControls] = useState(false)
+
+
+    useLayoutEffect(() => {
+        const handleClick = (event: MouseEvent) => {
+            const target = event.target as HTMLElement;
+    
+            // Check if the click is inside the menu (more reliable)
+            if (!target.closest('.byte-controls-button, .byte-control-item, .bit')) {
+                setShowControls(false);
+            }
+        };
+    
+        document.addEventListener("click", handleClick);
+    
+        return () => {
+            document.removeEventListener("click", handleClick);
+        };
+    }, []);
+
+    const flipBits = (event: React.MouseEvent<HTMLElement>): void => {
         const updatedBits = [...bits]
         onByteChange( byteNumber, updatedBits.map((b) => b === '0' ? '1' : '0' ))
     }
 
-    const resetBits = (event: React.MouseEvent<HTMLButtonElement>): void => {
+    const resetBits = (event: React.MouseEvent<HTMLElement>): void => {
         const updatedBits = [...bits]
         onByteChange(byteNumber, updatedBits.map(() => '0' ))
     }
 
-    const shiftBits = (bits: string[], direction: 'left' | 'right', overflow: boolean = true): string[] => {
+    const shiftBits = (bits: string[], direction: 'left' | 'right'): string[] => {
         const result = [...bits];
+        const useOverflow: boolean = config.overflow || false
         if (direction === 'left') {
             const lastBit = result[result.length - 1];
             for (let i = result.length - 1; i > 0; i--) {
                 result[i] = result[i - 1];
             }
-            result[0] = overflow ? lastBit : '0';
+            result[0] = useOverflow ? lastBit : '0';
         } else {
             const firstBit = result[0];
             for (let i = 0; i < result.length - 1; i++) {
                 result[i] = result[i + 1];
             }
-            result[result.length - 1] = overflow ? firstBit : '0';
+            result[result.length - 1] = useOverflow ? firstBit : '0';
         }
         return result;
     };
 
-    const shiftByte = (direction: 'left' | 'right') => (event: React.MouseEvent<HTMLButtonElement>): void => {
+    const shiftByte = (direction: 'left' | 'right') => (event: React.MouseEvent<HTMLElement>): void => {
         const updatedBits = shiftBits([...bits], direction);
         onByteChange(byteNumber, updatedBits);
     };
 
     const byteControlsList = [    
         {
-            position: 'end',
-            label: "Reset all bits in the byte to 0",
-            icon: <FontAwesomeIcon icon={faRotateLeft} size="2xl" color="mediumseagreen" />,
+            label: "Reset",
+            icon: <FontAwesomeIcon icon={faRotateLeft} size="1x" color="mediumseagreen" />, /* using 1em height/width here ensures we can use font-size to scale */
             testId: "reset-byte",
             handler: resetBits,
         },
         {
-            position: 'end',
-            label: "Swap all bits in the byte",
-            icon: <FontAwesomeIcon icon={faArrowsRotate}size="2xl" color="mediumseagreen"  />,
+            label: "Swap",
+            icon: <FontAwesomeIcon icon={faArrowsRotate}size="1x" color="mediumseagreen" />, /* using 1em height/width here ensures we can use font-size to scale */
             testId: "flip-byte",
             handler: flipBits,
         },
         {
-            position: 'start',
-            label: "Shift all bits in the byte to the right",
-            icon: <FontAwesomeIcon icon={faAngleDoubleRight} size="2xl" color="mediumseagreen" />,
+            label: "Shift Right",
+            icon: <FontAwesomeIcon icon={faAngleDoubleRight} size="1x" color="mediumseagreen" />, /* using 1em height/width here ensures we can use font-size to scale */
             testId: "shift-bits-right",
             handler: shiftByte('right'),
         },
         {
-            position: 'start',
-            label: "Shift all bits in the byte to the left",
-            icon: <FontAwesomeIcon icon={faAngleDoubleLeft} size="2xl" color="mediumseagreen" />,
+            label: "Shift Left",
+            icon: <FontAwesomeIcon icon={faAngleDoubleLeft} size="1x" color="mediumseagreen" height="1em" width="1em" />, /* using 1em height/width here ensures we can use font-size to scale */
             testId: "shift-bits-left",
             handler: shiftByte('left'),
         },
     ]
 
     return (
-        <div className="byte-controls">
-            {byteControlsList.map((control, index) => (
-                control.position === position && (
-                    <button
-                        key={`${control.testId}-${byteNumber}`}
-                        id={`${control.testId}-${byteNumber}`}
-                        data-testid={control.testId}
-                        onClick={control.handler}
-                        aria-label={control.label}
-                    >
-                        {control.icon}
-                    </button>
-                )
-            ))}
+        <div>
+            {/* <button
+                data-testid="byte-controls-button"
+                className="byte-controls-button"
+                onClick={()=>{setShowControls(true)}}
+            >
+                Byte Controls
+            </button> */}
+            <div data-testid="byte-controls-container" className={`byte-controls ${showControls ? 'dropdown' : ''}`}>
+                <ul data-testid={`byte-controls-${byteNumber}`}>
+                {byteControlsList.map((control, index) => (
+                        <li
+                            key={`${control.testId}-${byteNumber}`}
+                            id={`${control.testId}-${byteNumber}`}
+                            data-testid={control.testId}
+                            onClick={control.handler}
+                            aria-label={control.label}
+                            className="byte-control-item"
+                        >
+                       {control.label}
+                        </li>
+                ))}
+                </ul>
+            </div>
         </div>
     )
 }

@@ -7,15 +7,9 @@
     text-align: center;
     cursor:pointer;
     color: white;
-    font-size: clamp(2.5rem, calc((100vw - var(--sidebar-width) - 20px) / 12), 9rem);
+    font-size: clamp(2.5rem, calc((100vw - var(--sidebar-size-func) - 20px) / 10), 5rem);
 }
 
 span.spacer {
     width: max(0.1vh, 1vw);
-}
-
-@media (max-width: 768px) {
-    /* 🔢 Bits Stack Properly */
-    .bit {
-    }
 }
