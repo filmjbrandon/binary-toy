@@ -42,6 +42,12 @@ const ValueControls: React.FC<ValueControlsProps> = ({
         setIntValue(parseInt(event.target.value, 16)) // convert hex to int
     }
 
+    const handleCharChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+        const codePoint = (event.target.value).codePointAt(0)?.toString(16) // represent as hex for efficiency
+        if (codePoint) 
+            setIntValue(parseInt(codePoint, 16)) // convert hex to int
+    }
+
     const makeHexColor = (num: number) => {
         return "#" +
             Number(num).toString(16)
@@ -135,14 +141,15 @@ const ValueControls: React.FC<ValueControlsProps> = ({
             handler: handleIntChange,
             value: intValue,
         },
-    ]
-
-    const valueReadOnlyList = [
         {
             label: "Character",
             testId: "char-value",
             value: (intValue <= 1114112) ? String.fromCodePoint(intValue) : '[N/A]',
+            handler: handleCharChange,
         },
+    ]
+
+    const valueReadOnlyList = [
         {
             label: "Color",
             testId: "color-value",

@@ -129,3 +129,14 @@ test('pressing enter will trigger update', async () => {
     })
 })
 
+test('changing char calls onChangeIntValue', () => {
+    render(<ValueControls onChangeIntValue={mockHandler} currentIntValue={8}/>)
+    const textbox = screen.getByTestId('char-value');
+    fireEvent.click(textbox);
+    expect(textbox).toBeEnabled();
+    userEvent.type(textbox, 'A');
+    userEvent.tab()
+    expect(mockHandler).toHaveBeenCalled()
+    expect(mockHandler).toBeCalledWith(65)
+})
+
