@@ -106,10 +106,6 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
 
     return (
         <div data-testid="bit-interaction" className="interaction">
-            <div className="header">
-                <h1>Binary Toy</h1>
-                <p>An interactive tool for exploring binary numbers for education and fun</p>
-            </div>
             <div className="container">
                 <nav className="sidebar">
                     <BitControls

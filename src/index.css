@@ -4,6 +4,8 @@
   --sidebar-size-func: clamp(var(--sidebar-min-width), 20vw, var(--sidebar-max-width)); /* try to keep sidebar at 20% of the total viewport width */
   --button-size-func: clamp(calc(var(--sidebar-min-width)*0.8), calc(0.8 * 20vw), calc(var(--sidebar-max-width)*0.8));
   --autoscaled-font-size:  clamp(0.5rem, calc(var(--button-size-func) / 3.5), 2.5rem); /* scale font to sidebar's width  */
+  --footer-height: 1.5rem;
+  --header-height: 
 }
 
 body, div, p, span, h1 {
