@@ -34,7 +34,7 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     useEffect(() => {
         setChunkedBitArray((prevChunkedBitArray) => {
             const newChunkedBitArray = calculateChunkedBitArray(intValue)
-            console.log(`new: ${newChunkedBitArray}, prev:${prevChunkedBitArray}`)
+            console.debug(`UseEffect/setChunkedBitArray: newChunkedBitArray: ${newChunkedBitArray}, prevChunked:${prevChunkedBitArray}`)
             if (_.isEqual(prevChunkedBitArray,newChunkedBitArray)) {
                 return prevChunkedBitArray
             } else {
@@ -51,28 +51,28 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
 
     // // Update intValue and bitCount when chunkedBitArray changes
     useEffect(() => {
-        console.log('modifying chunked bit array...')
+        console.debug('useEffect: modifying chunked bit array...')
         setBitCount((prevBitCount) => {
             const newBitCount = chunkedBitArray.flat().length
             return newBitCount === prevBitCount ? prevBitCount : newBitCount
         })
 
         setIntValue((prevIntValue) => {
-            console.log(`chunkedBitArray = ${chunkedBitArray}, prevIntValue = ${prevIntValue}, ${bitCount}`)
+            console.debug(`setIntValue: chunkedBitArray = ${chunkedBitArray}, prevIntValue = ${prevIntValue}, ${bitCount}`)
             const updatedBits = chunkedBitArray.flat()
-            console.log(`updatedBits = ${updatedBits}, ${bitCount}`)
+            console.debug(`setIntValue: updatedBits = ${updatedBits}, ${bitCount}`)
             const newIntValue = parseInt([...updatedBits].toReversed().join(""), 2)
         
             // Avoid redundant updates by checking if intValue actually changes
             if (newIntValue !== prevIntValue) {
-                console.log(`chunkedBitArray changed, updating intValue to ${newIntValue}`);
+                console.debug(`setIntValue: chunkedBitArray changed, updating intValue to ${newIntValue}`);
                 return newIntValue;
             }
             return prevIntValue; // No changes, keep the same
         });
     }, [chunkedBitArray]);
 
-    console.log(`bits as binary string = ${chunkedBitArray.flat().toReversed().join("")}`)
+    console.debug(`BitInteraction.tsx: bits as binary string = ${chunkedBitArray.flat().toReversed().join("")}`)
 
     const handleBitChange = (index: number) => {
         const updatedBits = [...chunkedBitArray.flat()]
@@ -89,13 +89,13 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
     };
 
     const updateByte = (chunkIndex: number, bits: string[]):void => {
-        console.log(chunkIndex, bits)
+        console.debug(`updateByte: chunkIndex: ${chunkIndex}, bits: ${bits}`)
         setChunkedBitArray((prevChunkedBitArray) => {
             if (prevChunkedBitArray[chunkIndex] === bits)
                 return prevChunkedBitArray
 
             const updatedChunkedBitArray = prevChunkedBitArray.map((chunk, index) => { 
-                console.log(index, chunk, bits)
+                console.debug(`updateByte/updatedChunkBitArray: index: ${index}, chunk: ${chunk}`)
                 if (index === chunkIndex)
                     return bits
                 return chunk 
@@ -106,37 +106,54 @@ const BitInteraction: React.FC<BitInteractionProps> = ({ numberOfBits = 8, start
 
     return (
         <div data-testid="bit-interaction" className="interaction">
-            <div data-testid="bits" className="bits">
-                {chunkedBitArray.map((chunk, chunkIndex) => (
-                    <div
-                        key={"byte-" + chunkIndex}
-                        className="byte"
-                        data-testid="byte"
-                        id={"byte-" + chunkIndex}>
-                        <ByteControls key={`byte-controls-${chunkIndex}`} byteNumber={chunkIndex} bits={chunk} onByteChange={updateByte} />
-                        {chunk.map((bitVal, bitIndex) => (
-                            <Bit
-                                key={`${chunkIndex}-${bitIndex}`}
-                                index={bitIndex + (chunkIndex * 8)}
-                                defaultValue={Number(bitVal)}
-                                onToggleBit={handleBitChange}
-                            />
+            <div className="header">
+                <h1>Binary Toy</h1>
+                <p>An interactive tool for exploring binary numbers for education and fun</p>
+            </div>
+            <div className="container">
+                <nav className="sidebar">
+                    <BitControls
+                        onChangeBits={onChangeBits}
+                        currentBitArray={chunkedBitArray.flat()}
+                        key={`bit-control-${chunkedBitArray.flat().join('')}`}
+                    />
+                </nav>
+                <div className="main-content">
+                    <ValueControls
+                        currentIntValue={internalIntValue}
+                        onChangeIntValue={onChangeIntValue}
+                        key={`vc-component-${internalIntValue}`}
+                    />
+                    <div data-testid="bits" className="bit-container">
+                        {chunkedBitArray.map((chunk, chunkIndex) => (
+                            <div
+                                key={"byte-" + chunkIndex}
+                                className="byte"
+                                data-testid="byte"
+                                id={"byte-" + chunkIndex}
+                            >        
+                            <ByteControls 
+                                    key={`byte-controls-${chunkIndex}-end`} 
+                                    byteNumber={chunkIndex} 
+                                    bits={chunk} 
+                                    onByteChange={updateByte}
+                                />             
+                                {chunk.map((bitVal, bitIndex) => (
+                                    <div key={`${chunkIndex}-${bitIndex}`}>
+                                        {bitIndex === 4 && <span className="spacer"></span>}
+                                        <Bit
+                                            key={`${chunkIndex}-${bitIndex}`}
+                                            index={bitIndex + (chunkIndex * 8)}
+                                            defaultValue={Number(bitVal)}
+                                            onToggleBit={handleBitChange}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         ))}
                     </div>
-                ))}
+                </div>
             </div>
-
-            <BitControls
-                onChangeBits={onChangeBits}
-                currentBitArray={chunkedBitArray.flat()}
-                key={`bit-control-${chunkedBitArray.flat().join('')}`}
-            />
-
-            <ValueControls
-                currentIntValue={internalIntValue}
-                onChangeIntValue={onChangeIntValue}
-                key={`value-controls-${internalIntValue}`}
-            />
         </div>
     );
 }

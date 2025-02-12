@@ -1,11 +1,23 @@
+:root {
+  --sidebar-min-width: 65px; /* min value of sidebar before screen is small enough for mobile UI */
+  --sidebar-max-width: 155px; /* max size of the sidebar regardless of screen width */
+  --sidebar-size-func: clamp(var(--sidebar-min-width), 20vw, var(--sidebar-max-width)); /* try to keep sidebar at 20% of the total viewport width */
+  --button-size-func: clamp(calc(var(--sidebar-min-width)*0.8), calc(0.8 * 20vw), calc(var(--sidebar-max-width)*0.8));
+  --autoscaled-font-size:  clamp(0.5rem, calc(var(--button-size-func) / 3.5), 2.5rem); /* scale font to sidebar's width  */
+}
+
+body, div, p, span, h1 {
+  margin: 0;
+  padding: 0;
+}
+
 body {
-  margin: auto;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color:rgb(1, 1, 10);
+  background-color:black;
 }
 
 .code {

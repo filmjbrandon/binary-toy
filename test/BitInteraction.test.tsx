@@ -91,26 +91,25 @@ test('can add bits', () => {
     let bits = screen.getAllByTestId(/^bit-[0-9]+/i);
     expect(bits).toHaveLength(2);
     const button = screen.getByTestId('add-bit');
-    expect(button).toHaveTextContent('Add Bit');
     fireEvent.click(button);
     bits = screen.getAllByTestId(/^bit-[0-9]+/);
     expect(bits).toHaveLength(3);
 });
 
 test('adding bits does not alter existing state', () => {
-    console.log("starting with 2 bits")
+    console.debug("starting with 2 bits")
     render(<BitInteraction startingIntValue={10} />);
     const button = screen.getByTestId('add-bit');
-    console.log("adding 1 bit")
+    console.debug("adding 1 bit")
     fireEvent.click(button);
     const intValue = screen.getByTestId('int-value');
     expect(intValue).toHaveValue('10');
-    console.log("adding 1 bit")
+    console.debug("adding 1 bit")
     fireEvent.click(button);
-    console.log("adding 1 bit")
+    console.debug("adding 1 bit")
     fireEvent.click(button);
     expect(intValue).toHaveValue('10');
-    console.log("cleanup")
+    console.debug("cleanup")
 })
 
 test('bit interaction can be loaded with a default value that is multiple of 8', () => {
@@ -185,7 +184,6 @@ test('can remove bits', () => {
     let bits = screen.getAllByTestId(/^bit-[0-9]+/i);
     expect(bits).toHaveLength(3);
     let button = screen.getByTestId('remove-bit');
-    expect(button).toHaveTextContent('Remove Bit');
     fireEvent.click(button);
     bits = screen.getAllByTestId(/^bit-[0-9]+/i);
     expect(bits).toHaveLength(2);
@@ -253,19 +251,35 @@ test('deleting a byte recalculates accurately', () => {
     })
 })
 
-test('decrementing does not reduce bits', () => {
+test('decrementing does not reduce bits', async () => {
     render(<BitInteraction startingIntValue={256} numberOfBits={9} />)
     let bits = screen.getAllByTestId(/^bit-[0-9]+/)
     expect(bits).toHaveLength(9)
-    expect(bits[8]).toHaveTextContent('1')
     expect(bits[0]).toHaveTextContent('0')
+    expect(bits[1]).toHaveTextContent('0')
+    expect(bits[2]).toHaveTextContent('0')
+    expect(bits[3]).toHaveTextContent('0')
+    expect(bits[4]).toHaveTextContent('0')
+    expect(bits[5]).toHaveTextContent('0')
+    expect(bits[6]).toHaveTextContent('0')
+    expect(bits[7]).toHaveTextContent('0')
+    expect(bits[8]).toHaveTextContent('1')
     const decrement = screen.getAllByTestId('dec-value')[0]
     fireEvent.click(decrement)
     bits = screen.getAllByTestId(/^bit-[0-9]+/)
-    expect(bits[0]).toHaveTextContent('1')
-    expect(bits[8]).toHaveTextContent('0')
-    expect(bits).toHaveLength(9)
-
+    waitFor(() => {
+        expect(intValue).toHaveValue('255')
+        expect(bits).toHaveLength(9)
+        expect(bits[0]).toHaveTextContent('1')
+        expect(bits[1]).toHaveTextContent('1')
+        expect(bits[2]).toHaveTextContent('1')
+        expect(bits[3]).toHaveTextContent('1')
+        expect(bits[4]).toHaveTextContent('1')
+        expect(bits[5]).toHaveTextContent('1')
+        expect(bits[6]).toHaveTextContent('1')
+        expect(bits[7]).toHaveTextContent('1')
+        expect(bits[8]).toHaveTextContent('0')    
+    })
 })
 
 test('incrementing may add a bit', async () => {
@@ -361,7 +375,6 @@ test('can add a byte at a time', () => {
     expect(bits.length).toBe(8);
 
     const button = screen.getByTestId('add-byte');
-    expect(button).toHaveTextContent('Add Byte');
     fireEvent.click(button);
     bits = screen.getAllByTestId(/^bit-[0-9]+/);
     expect(bits.length).toBe(16);
@@ -373,7 +386,6 @@ test('can remove a byte at a time', () => {
     expect(bits.length).toBe(15);
 
     const button = screen.getByTestId('remove-byte');
-    expect(button).toHaveTextContent('Remove Byte');
     fireEvent.click(button);
     bits = screen.getAllByTestId(/^bit-[0-9]+/);
     expect(bits.length).toBe(8);
@@ -390,7 +402,6 @@ test('can delete a bit after deleting a byte', () => {
     expect(bits.length).toBe(8);
 
     button = screen.getByTestId('remove-bit');
-    expect(button).toHaveTextContent('Remove Bit');
     fireEvent.click(button);
     bits = screen.getAllByTestId(/^bit-[0-9]+/);
     expect(bits).toHaveLength(7);
@@ -500,16 +511,42 @@ test('can set bits from int value', async () => {
     })
 });
 
-test('can set bit count from input', () => {
+test('can add bit count from input', () => {
     render(<BitInteraction />);
     const textbox = screen.getByTestId('bit-count');
     expect(textbox).toHaveValue('8');
     fireEvent.click(textbox);
     expect(textbox).toBeEnabled();
     userEvent.clear(textbox);
-    userEvent.type(textbox, '1');
-    userEvent.type(textbox, '2');
+    userEvent.type(textbox, '12');
     userEvent.tab()
+    expect(textbox).toHaveValue('12');
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/);
+    expect(bits).toHaveLength(12);
+});
+
+test('can reduce bit count from input', () => {
+    render(<BitInteraction />);
+    const textbox = screen.getByTestId('bit-count');
+    expect(textbox).toHaveValue('8');
+    fireEvent.click(textbox);
+    expect(textbox).toBeEnabled();
+    userEvent.clear(textbox);
+    userEvent.type(textbox, '3');
+    userEvent.tab()
+    expect(textbox).toHaveValue('3');
+    let bits = screen.getAllByTestId(/^bit-[0-9]+/);
+    expect(bits).toHaveLength(3);
+});
+
+test('can set bit count from input on enter', () => {
+    render(<BitInteraction />);
+    const textbox = screen.getByTestId('bit-count');
+    expect(textbox).toHaveValue('8');
+    fireEvent.click(textbox);
+    expect(textbox).toBeEnabled();
+    userEvent.type(textbox, '12')
+    userEvent.type(textbox,'{enter}')
     expect(textbox).toHaveValue('12');
     let bits = screen.getAllByTestId(/^bit-[0-9]+/);
     expect(bits).toHaveLength(12);

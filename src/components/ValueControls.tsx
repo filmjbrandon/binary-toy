@@ -1,6 +1,6 @@
 import { CSSProperties, useEffect, useRef, useState } from "react"
 import _, { isEqual } from 'lodash';
-import "../css/Controls.css";
+import "../css/ValueControls.css";
 
 interface ValueControlsProps {
     currentIntValue: number,
@@ -11,6 +11,8 @@ const ValueControls: React.FC<ValueControlsProps> = ({
     currentIntValue,
     onChangeIntValue = () => 0 // default to 0 if no value provided, useful for testing
 }) => {
+
+    console.debug("Loading ValueControls");
 
     const MAXBITS = 64
     const toHex = (newIntValue: number): string => {
@@ -107,20 +109,20 @@ const ValueControls: React.FC<ValueControlsProps> = ({
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Return") {
-            console.log("hello, world")
+            console.debug("hello, world")
             inputRef.current?.blur(); // Programmatically blur the input
         }
     };
 
     const valueControlsList = [
         {
-            label: "Hex Value",
+            label: "Hex",
             testId: "hex-value",
             handler: handleHexChange,
             value: hexValue,
         },
         {
-            label: "Integer Value",
+            label: "Integer",
             testId: "int-value",
             handler: handleIntChange,
             value: intValue,
@@ -148,49 +150,55 @@ const ValueControls: React.FC<ValueControlsProps> = ({
             data-testid="value-controls"
         >
             {valueControlsList.map((control, index) => (
-                <div className="value-control-item">
+                <div 
+                    className="value-control-item"
+                    key={`vcci1-${control.testId}-${index}`}
+                >
                     <label htmlFor={`value-control-${index}`}>
                         {control.label}
                     </label>
-                    <div className="inc-dec">
-                        <span
-                            hidden={intValue >= Math.pow(2, MAXBITS)}
-                            data-testid="inc-value"
-                            onClick={incrementValue}
-                            className="inc">{String.fromCodePoint(0x25b2)}</span>
-                        <span
-                            hidden={intValue === 0}
-                            data-testid="dec-value"
-                            onClick={decrementValue}
-                            className="dec">{String.fromCodePoint(0x25bc)}</span>
+                    <div>
+                        <input
+                            id={`value-control-${control.testId}-${index}`}
+                            ref={inputRef}
+                            data-testid={control.testId}
+                            name={control.testId}
+                            onBlur={control.handler}
+                            defaultValue={control.value.toString()}
+                            onKeyDown={handleKeyDown}
+                            title={control.value.toString()}
+                        />
+                        <div className="inc-dec">
+                            <div
+                                hidden={intValue >= Math.pow(2, MAXBITS)}
+                                data-testid="inc-value"
+                                onClick={incrementValue}
+                                className="inc">{String.fromCodePoint(0x25b2)}
+                            </div>
+                            <div
+                                hidden={intValue === 0}
+                                data-testid="dec-value"
+                                onClick={decrementValue}
+                                className="dec">{String.fromCodePoint(0x25bc)}
+                            </div>
+                        </div>
                     </div>
-                    <input
-                        id={`value-control-${control.testId}-${index}`}
-                        key={`value-control-${control.testId}-${index}`}
-                        ref={inputRef}
-                        data-testid={control.testId}
-                        name={control.testId}
-                        onBlur={control.handler}
-                        defaultValue={control.value.toString()}
-                        onKeyDown={handleKeyDown}
-                        title={control.value.toString()}
-                    />
-                    
                 </div>
             ))}
 
             {valueReadOnlyList.map((control, index) => (
                 <div className="value-control-item"
+                    key={`vcci2-${control.testId}-${index}`}
                     hidden={control.value === '[N/A]'
                     }
                 >
-                    <label htmlFor={`value-control-${index}`}>
+                    <label key={`lblvc-${index}`} htmlFor={`vc-${index}`}>
                         {control.label}
                     </label>
                     <input
                         readOnly
-                        id={`value-control-${control.testId}-${index}`}
-                        key={`value-control-${control.testId}-${index}`}
+                        id={`vc-${index}`}
+                        key={`vc-${control.testId}-${index}`}
                         data-testid={control.testId}
                         name={control.testId}
                         value={control.value.toString()}
