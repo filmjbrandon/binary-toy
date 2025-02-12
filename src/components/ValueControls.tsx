@@ -24,7 +24,6 @@ const ValueControls: React.FC<ValueControlsProps> = ({
     const [hexValue, setHexValue] = useState(toHex(intValue))
     const decrementValue = () => setIntValue(intValue - 1)
     const incrementValue = () => setIntValue(intValue + 1)
-    const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         setHexValue((prevHexValue) => {
@@ -107,12 +106,19 @@ const ValueControls: React.FC<ValueControlsProps> = ({
         return styles
     }
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Return") {
-            console.debug("hello, world")
-            inputRef.current?.blur(); // Programmatically blur the input
+    const selectInputContents = (event: React.MouseEvent<HTMLInputElement>): void => {
+        const input = event.target as HTMLInputElement
+        input.focus()
+        input.select()
+    }
+
+    const changeOnEnter = (event: React.KeyboardEvent<HTMLInputElement>, handler:Function): void => {
+        const input = event.target as HTMLInputElement
+        if (event.key === 'Enter') {
+            console.debug(`changeOnEnter: Enter pressed on event`)
+            handler({ target: event.target } as React.ChangeEvent<HTMLInputElement>);
         }
-    };
+    }
 
     const valueControlsList = [
         {
@@ -160,12 +166,13 @@ const ValueControls: React.FC<ValueControlsProps> = ({
                     <div>
                         <input
                             id={`value-control-${control.testId}-${index}`}
-                            ref={inputRef}
+                            key={`vc-${control.testId}-${index}`}
                             data-testid={control.testId}
                             name={control.testId}
                             onBlur={control.handler}
                             defaultValue={control.value.toString()}
-                            onKeyDown={handleKeyDown}
+                            onClick={selectInputContents}
+                            onKeyUp={(e)=>changeOnEnter(e, control.handler)}
                             title={control.value.toString()}
                         />
                         <div className="inc-dec">
@@ -185,8 +192,7 @@ const ValueControls: React.FC<ValueControlsProps> = ({
                     </div>
                 </div>
             ))}
-
-            {valueReadOnlyList.map((control, index) => (
+                {valueReadOnlyList.map((control, index) => (
                 <div className="value-control-item"
                     key={`vcci2-${control.testId}-${index}`}
                     hidden={control.value === '[N/A]'
@@ -197,7 +203,7 @@ const ValueControls: React.FC<ValueControlsProps> = ({
                     </label>
                     <input
                         readOnly
-                        id={`vc-${index}`}
+                        id={`value-read-${index}`}
                         key={`vc-${control.testId}-${index}`}
                         data-testid={control.testId}
                         name={control.testId}

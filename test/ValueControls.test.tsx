@@ -1,7 +1,8 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { vi, expect, test, beforeEach, afterEach } from 'vitest'
 import ValueControls from '../src/components/ValueControls';
 import userEvent from '@testing-library/user-event';
+import { random } from 'lodash';
 
 
 const readValue = (value: number) => {
@@ -98,4 +99,33 @@ test('hovering over a textbox will reveal full text', () => {
         expect(box.title).toBe(box.value)
     });
 });
+
+test('select all content on click of an input', () => {
+    render(<ValueControls currentIntValue={8} />)
+    const controls = screen.getByTestId('value-controls')
+    const textboxes = within(controls).getAllByRole('textbox');
+    textboxes.forEach((item)=>{
+        if (item.id.startsWith('value-control-')) {
+            const text = (item as HTMLInputElement).value
+            fireEvent.click(item)
+            expect(item).toHaveSelection(text)
+        }
+    })
+})
+
+test('pressing enter will trigger update', async () => {
+    render(<ValueControls currentIntValue={8}  onChangeIntValue={mockHandler}/>)
+    const controls = screen.getByTestId('value-controls')
+    const textboxes = within(controls).getAllByRole('textbox');
+    textboxes.forEach((item)=>{
+        if (item.id.startsWith('value-control-')) {
+            let number = random(1,9);
+            const text = (item as HTMLInputElement).value
+            fireEvent.click(item)
+            userEvent.type(item, (--number).toString())
+            userEvent.type(item, '{enter}')
+            expect(mockHandler).toBeCalledWith(number)
+        }
+    })
+})
 

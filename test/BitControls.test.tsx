@@ -104,6 +104,7 @@ test('clicking into bit-count field, select all content', async() => {
     const bitCount = screen.getByTestId('bit-count');
     expect(bitCount).toHaveValue('2')
     fireEvent.click(bitCount)
+    expect(bitCount).toHaveSelection('2')
 })
 
 
